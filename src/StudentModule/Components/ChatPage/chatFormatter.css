@@ -206,3 +206,26 @@
     white-space: pre-wrap;
     /* تحافظ على الأسطر */
 }
+
+
+.custom-message-content {
+  white-space: pre-wrap; /* يحافظ على الأسطر */
+  word-wrap: break-word;
+}
+
+.chat-heading.h1 { font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0; }
+.chat-heading.h2 { font-size: 1.3rem; font-weight: bold; margin: 0.4rem 0; }
+.chat-heading.h3 { font-size: 1.1rem; font-weight: bold; margin: 0.3rem 0; }
+
+.chat-subtitle { font-weight: bold; }
+.chat-italic { font-style: italic; }
+.chat-inline-highlight { background-color: yellow; }
+.chat-code { background: #222; color: #0f0; padding: 0.5rem; border-radius: 5px; }
+.chat-tip { border-left: 3px solid #0af; padding-left: 0.5rem; color: #0af; }
+.chat-arrow { font-weight: bold; }
+.chat-paragraph { margin: 0.3rem 0; }
+.chat-funny { color: #ff5722; }
+.chat-scientific { color: #2196f3; }
+.chat-tip-paragraph { color: #4caf50; }
+.chat-reference { font-size: 0.9rem; color: #999; }
+.chat-book { font-size: 0.95rem; font-style: italic; }

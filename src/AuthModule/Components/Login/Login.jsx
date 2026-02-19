@@ -70,12 +70,29 @@ export default function Login() {
                   />
                 </div>
 
-                <button className="w-100 mt-3 login-btn-style">Login</button>
-              </form>
+  <div className="links d-flex justify-content-between">
+                    <Link
+                      className=" text-decoration-none link-style"
+                      to={"/register"}
+                    >
+                      Register Now?
+                    </Link>
+                    <Link
+                      className=" text-decoration-none link-style"
+                      to={"/forget-pass"}
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                  <button className=" w-100 m-auto d-block mt-3 login-btn-style ">
+                    Login
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+   
   );
 }

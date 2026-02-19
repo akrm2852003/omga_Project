@@ -13,6 +13,7 @@ import SideBar from "../../../SharedModule/SideBar/SideBar";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
 import { UserContext } from "../../../Context/AuthContext/AuthContext";
+import formatMessage from "../ChatPage/chatFormatter"; // استدعاء الفورماتر
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -34,7 +35,7 @@ export default function ChatPage() {
         `https://aiservice.magacademy.co/v2/chat/${chatId}`,
       );
       const formattedMessages = response.data.chat.map((msg) => ({
-        message: msg.text,
+        message: msg.role === "ai" ? formatMessage(msg.text) : msg.text, // <-- هنا الفورمات للـ AI فقط
         sender: msg.role === "user" ? "You" : "AI",
         direction: msg.role === "user" ? "outgoing" : "incoming",
         sentTime: "just now",
@@ -85,10 +86,12 @@ export default function ChatPage() {
         navigate(`/home/chat/${returnedId}`);
       }
 
-      /* إضافة رد AI */
+      /* إضافة رد AI بعد تطبيق الفورمات */
       if (aiReply) {
+        const formattedReply = formatMessage(aiReply);
+
         const aiMessage = {
-          message: aiReply,
+          message: formattedReply,
           sender: "AI",
           direction: "incoming",
           sentTime: "just now",
@@ -133,13 +136,15 @@ export default function ChatPage() {
                 <Message
                   key={index}
                   model={{
-                    message: message.message,
+                    message: "", // خلي الرسالة فارغة عشان نعرض HTML من جوه
                     sentTime: message.sentTime,
                     sender:
                       message.sender.toLowerCase() === "you" ? "user" : "ai",
                     direction: message.direction,
                   }}
-                />
+                >
+                  <div dangerouslySetInnerHTML={{ __html: message.message }} />
+                </Message>
               ))}
             </MessageList>
             <MessageInput
