@@ -7,7 +7,8 @@ import { UserContext } from "../../../Context/AuthContext/AuthContext";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
 
 export default function Login() {
-  const { setUserId, setuserEmail } = useContext(UserContext);
+  const { setUserId, setUserEmail, userName, setUserName } =
+    useContext(UserContext);
   const { setUserChatsId } = useContext(UserChatsId);
 
   const {
@@ -31,10 +32,13 @@ export default function Login() {
       /* حفظ البيانات */
       localStorage.setItem("userId", user.user_id);
       localStorage.setItem("userEmail", user.user_email);
+      localStorage.setItem("userName", user.user_name);
 
       /* تحديث Auth Context */
       setUserId(user.user_id);
-      setuserEmail(user.user_email);
+      setUserEmail(user.user_email);
+      setUserName(user.user_name)
+
 
       /* تحديث Chats Context */
       setUserChatsId(chats);

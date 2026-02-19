@@ -18,6 +18,7 @@ body {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+
 }
 
 .my-style-input-label {
@@ -229,6 +230,56 @@ svg:not(:host).svg-inline--fa:hover {
 
 
 
+/* ================= Navbar Dark - متناسق مع Sidebar */
+.navbar-custom {
+  background-color: #1c2433; /* نفس لون Sidebar */
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
 
+/* ألوان النص */
+.navbar-custom .nav-link,
+.navbar-custom .navbar-brand {
+  color: #e0e0e0;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect زي Sidebar */
+.navbar-custom .nav-link:hover,
+.navbar-custom .navbar-brand:hover {
+  color: #0dcaf0;
+  cursor: pointer;
+}
+
+/* زر Logout */
+.btn-logout {
+  background-color: #0dcaf0;
+  color: #131a2a;
+  border: none;
+  padding: 0.35rem 0.8rem;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  background-color: #09b4d8;
+  color: #fff;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+
+
+
+.vh-90{
+  height: 90vh;
+}
+
+.w-90{
+  width: 50%;
+}
 
 

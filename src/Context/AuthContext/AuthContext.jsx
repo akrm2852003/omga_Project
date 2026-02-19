@@ -1,34 +1,46 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react";
 
-export let UserContext = createContext();
+export const UserContext = createContext();
 
-export default function AuthContext({ children }) {
-  const [userId, setUserId] = useState(null);
-  const [userEmail, setuserEmail] = useState(null);
+export default function AuthContextProvider({ children }) {
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
+  const [userEmail, setUserEmail] = useState(
+    localStorage.getItem("userEmail") || null,
+  );
+  const [userName, setUserName] = useState(
+    localStorage.getItem("userName") || "",
+  );
 
-  function saveLoginData() {
-    setUserId(localStorage.getItem("userId"));
-    setuserEmail(localStorage.getItem("userEmail"));
-  }
-
+  // دالة Logout
   function logout() {
+    // مسح البيانات من localStorage
     localStorage.removeItem("userId");
-    window.location.href = "/login";
-  }
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userChatsIdsByEmail");
 
-  useEffect(() => {
-    if (localStorage.getItem("userId")) {
-      saveLoginData();
-    }
-  }, []);
+    // إعادة تعيين State
+    setUserId(null);
+    setUserEmail(null);
+    setUserName("");
+
+    // إعادة توجيه المستخدم للصفحة الرئيسية أو صفحة تسجيل الدخول
+    window.location.href = "/login"; // أو استخدم useNavigate في حالة React Router
+  }
 
   return (
-    <>
-      <UserContext.Provider
-        value={{ userId, setUserId, logout , setuserEmail , userEmail }}
-      >
-        {children}
-      </UserContext.Provider>
-    </>
+    <UserContext.Provider
+      value={{
+        userId,
+        setUserId,
+        userEmail,
+        setUserEmail,
+        userName,
+        setUserName,
+        logout, // تمرير الدالة للـContext
+      }}
+    >
+      {children}
+    </UserContext.Provider>
   );
 }

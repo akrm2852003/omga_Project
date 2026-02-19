@@ -3,16 +3,15 @@ import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/siadeBarLogo.png";
 import { UserChatsId } from "../../Context/ChatsContext/ChatsContext";
+import { UserContext } from "../../Context/AuthContext/AuthContext";
 import axios from "axios";
 
-export default function SideBar({ userEmail }) {
+export default function SideBar() {
   const navigate = useNavigate();
   const { userChatsId, userChats, setUserChats } = useContext(UserChatsId);
+  const { userEmail } = useContext(UserContext); // جلب الايميل من AuthContext
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  /* ==========================
-        FETCH CHATS FOR CURRENT USER
-  ========================== */
   useEffect(() => {
     async function fetchChats() {
       if (!userEmail || userChatsId.length === 0) {
@@ -36,9 +35,6 @@ export default function SideBar({ userEmail }) {
     fetchChats();
   }, [userChatsId, userEmail]);
 
-  /* ==========================
-        START NEW CHAT
-  ========================== */
   function handleNewChat() {
     navigate("/home");
   }

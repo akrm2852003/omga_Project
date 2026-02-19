@@ -13,7 +13,6 @@ import SideBar from "../../../SharedModule/SideBar/SideBar";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
 import { UserContext } from "../../../Context/AuthContext/AuthContext";
-import formatMessage from "../ChatPage/chatFormatter"; // استدعاء الفورماتر
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -35,7 +34,7 @@ export default function ChatPage() {
         `https://aiservice.magacademy.co/v2/chat/${chatId}`,
       );
       const formattedMessages = response.data.chat.map((msg) => ({
-        message: msg.role === "ai" ? formatMessage(msg.text) : msg.text, // <-- هنا الفورمات للـ AI فقط
+        message: msg.text,
         sender: msg.role === "user" ? "You" : "AI",
         direction: msg.role === "user" ? "outgoing" : "incoming",
         sentTime: "just now",
@@ -86,12 +85,10 @@ export default function ChatPage() {
         navigate(`/home/chat/${returnedId}`);
       }
 
-      /* إضافة رد AI بعد تطبيق الفورمات */
+      /* إضافة رد AI */
       if (aiReply) {
-        const formattedReply = formatMessage(aiReply);
-
         const aiMessage = {
-          message: formattedReply,
+          message: aiReply,
           sender: "AI",
           direction: "incoming",
           sentTime: "just now",
@@ -119,41 +116,42 @@ export default function ChatPage() {
   return (
     <div className="container-fluid p-0 d-flex">
       {/* Sidebar */}
-      <div className="sidebar">
+      {/* <div className="sidebar">
         <SideBar userEmail={userEmail} />
-      </div>
+      </div> */}
 
       {/* Chat Area */}
-      <div className="ai-chat-container d-flex justify-content-center align-items-center vh-100 w-100 p-2">
-        <MainContainer className="shadow-lg p-3 mb-5 custom-w-h rounded-3 border-1">
-          <ChatContainer>
-            <MessageList
-              typingIndicator={
-                isTyping ? <TypingIndicator content="AI is typing..." /> : null
-              }
-            >
-              {messages.map((message, index) => (
-                <Message
-                  key={index}
-                  model={{
-                    message: "", // خلي الرسالة فارغة عشان نعرض HTML من جوه
-                    sentTime: message.sentTime,
-                    sender:
-                      message.sender.toLowerCase() === "you" ? "user" : "ai",
-                    direction: message.direction,
-                  }}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: message.message }} />
-                </Message>
-              ))}
-            </MessageList>
-            <MessageInput
-              onSend={handleSubmit}
-              placeholder="Type message here"
-            />
-          </ChatContainer>
-        </MainContainer>
-      </div>
+     <div className="ai-chat-container d-flex justify-content-center align-items-center  vh-90 w-100 p-2">
+  <MainContainer className="shadow-lg p-3  custom-w-h rounded-3 border-1 h-100 w-100  ">
+    <ChatContainer className="h-100 d-flex flex-column">
+      <MessageList
+        className="flex-grow-1 overflow-auto"
+        typingIndicator={
+          isTyping ? <TypingIndicator content="AI is typing..." /> : null
+        }
+      >
+        {messages.map((message, index) => (
+          <Message
+            key={index}
+            model={{
+              message: message.message,
+              sentTime: message.sentTime,
+              sender:
+                message.sender.toLowerCase() === "you" ? "user" : "ai",
+              direction: message.direction,
+            }}
+          />
+        ))}
+      </MessageList>
+
+      <MessageInput
+        onSend={handleSubmit}
+        placeholder="Type message here"
+      />
+    </ChatContainer>
+  </MainContainer>
+</div>
+
     </div>
   );
 }

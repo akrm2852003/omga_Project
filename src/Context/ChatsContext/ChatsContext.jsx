@@ -1,56 +1,33 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, useContext } from "react";
+import { UserContext } from "../AuthContext/AuthContext";
 
 export const UserChatsId = createContext();
 
-export default function ChatsContext({ children, userEmail }) {
+export default function ChatsContext({ children }) {
+  const { userEmail } = useContext(UserContext);
   const [userChatsId, setUserChatsId] = useState([]);
   const [userChats, setUserChats] = useState([]);
 
-  /* تحميل IDs من localStorage */
-  function loadChatsIds() {
-    const allChats = JSON.parse(
-      localStorage.getItem("userChatsIdsByEmail") || "{}",
-    );
-
-    if (userEmail && allChats[userEmail]) {
-      setUserChatsId(allChats[userEmail]);
-    } else {
-      setUserChatsId([]);
-    }
-  }
-
-  /* حفظ IDs لكل ايميل */
-  function saveChatsIds(ids) {
-    const allChats = JSON.parse(
-      localStorage.getItem("userChatsIdsByEmail") || "{}",
-    );
-
-    if (userEmail) {
-      allChats[userEmail] = ids;
-      localStorage.setItem("userChatsIdsByEmail", JSON.stringify(allChats));
-    }
-  }
-
   useEffect(() => {
-    if (userEmail) {
-      loadChatsIds();
-    }
+    if (!userEmail) return; // لو مفيش ايميل، نوقف التنفيذ
+    const allChats = JSON.parse(
+      localStorage.getItem("userChatsIdsByEmail") || "{}",
+    );
+    if (allChats[userEmail]) setUserChatsId(allChats[userEmail]);
   }, [userEmail]);
 
   useEffect(() => {
-    if (userEmail) {
-      saveChatsIds(userChatsId);
-    }
+    if (!userEmail) return; // لو مفيش ايميل، نوقف التنفيذ
+    const allChats = JSON.parse(
+      localStorage.getItem("userChatsIdsByEmail") || "{}",
+    );
+    allChats[userEmail] = userChatsId;
+    localStorage.setItem("userChatsIdsByEmail", JSON.stringify(allChats));
   }, [userChatsId, userEmail]);
 
   return (
     <UserChatsId.Provider
-      value={{
-        userChatsId,
-        setUserChatsId,
-        userChats,
-        setUserChats,
-      }}
+      value={{ userChatsId, setUserChatsId, userChats, setUserChats }}
     >
       {children}
     </UserChatsId.Provider>
