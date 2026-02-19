@@ -1,0 +1,234 @@
+
+:root {
+  --bg-main: #0f172a;        /* خلفية عامة */
+  --bg-secondary: #1c2433;   /* كروت / شات */
+  --bg-hover: #0dcaf0;       
+  --text-main: #e0e0e0;
+  --text-muted: #9aa4b2;
+  --border-soft: rgba(13, 202, 240, 0.2);
+  --shadow-cyan: 0 0 25px rgba(13, 202, 240, 0.25);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+}
+
+
+
+*,
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.my-style-input-label {
+  width: 70%;
+  margin: auto;
+  border-radius: 5px;
+  border: none !important;
+  margin-bottom: 40px;
+}
+
+svg:not(:root).svg-inline--fa,
+svg:not(:host).svg-inline--fa {
+  overflow: visible;
+  box-sizing: content-box;
+  color: rgb(0, 0, 0) !important;
+  transition: all 0.2s ease;
+}
+
+svg:not(:host).svg-inline--fa:hover {
+  color: blue !important ;
+  transform: scale(1.5) !important;
+  cursor: pointer !important;
+}
+
+.cs-message-input__content-editor-wrapper {
+  background-color: transparent !important;
+  padding: 20px !important;
+  border: 0.5px solid #d1dbe3 !important;
+  border-radius: 30px !important;
+  box-shadow: 0px 5px 4px rgba(0, 0, 0, 0.075) !important; /* shadow-sm */
+}
+
+.cs-message-input__content-editor {
+  background-color: white !important;
+}
+.cs-chat-container .cs-message-input {
+  align-items: center !important;
+}
+
+.cs-message--incoming .cs-message__content,
+.cs-message--outgoing .cs-message__content {
+  background-color: #f4f4f4 !important;
+  border-radius: 12px !important;
+  padding: 15px !important;
+}
+
+.custom-w-h {
+  width: 90% !important;
+  height: 80% !important;
+}
+
+.my-sidebar-container .ps-sidebar-container {
+  background-color: #efefef;
+  color: black;
+  border-top-right-radius: 40px;
+}
+
+.css-1wvake5 {
+  border-right-style: none !important;
+}
+
+.auth-container {
+  background-image: url("../src/assets/Auth-bg.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.form-bg {
+  background-color: #131a2a; /* خلفية داكنة */
+  box-shadow: 0 0 15px rgba(13, 202, 240, 0.7); /* ظل أزرق فاتح */
+  opacity: 0.999;
+  padding: 20px;
+  border-radius: 10px;
+}
+.link-style {
+   background: linear-gradient(90deg, #0dcaf0 0%, #007bff 100%);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: all 0.3s ease;  color: white;
+ 
+  
+;
+
+  width: 200px;
+  text-align: center;
+}
+.link-style:hover{
+ box-shadow: 0 0 15px rgba(13, 202, 240, 0.7);
+  transform: translateY(-3px);
+}
+
+.login-btn-style{
+  background: linear-gradient(90deg, #0dcaf0 0%, #007bff 100%);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;  
+  color: white;
+  text-align: center;
+
+}
+.login-btn-style:hover{
+   box-shadow: 0 0 5px rgba(13, 202, 240, 0.7);
+  transform: translateY(-3px);
+}
+
+.form-bg input {
+  background-color: #1c2433; /* خلفية الحقول داكنة شوية */
+  color: #e0e0e0; /* لون النص أبيض فاتح */
+  border: 1px solid #0dcaf0; /* حدود أزرق فاتح متناسق مع الظل */
+  padding: 10px;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.form-bg input::placeholder {
+  color: #7f8fa6; /* لون placeholder رمادي فاتح يميل للأزرق */
+}
+
+.form-bg input:focus {
+  border-color: #0dcaf0; /* نفس لون الحدود */
+  box-shadow: 0 0 10px rgba(13, 202, 240, 0.5);
+}
+
+@keyframes updown {
+  0% {
+    transform: translateY(-20px);
+  }
+  50% {
+    transform: translateY(20px);
+  }
+  100% {
+    transform: translateY(-20px);
+  }
+}
+
+/* تطبيق الحركة على الصورة */
+.banner img {
+  animation: updown 3s linear infinite; /* اسم الحركة، المدة، النوع، تكرار لا نهائي */
+}
+
+.ai-message-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================== */
+/* Reset and Base */
+
+
+/* ================= Sidebar Dark */
+.my-sidebar-container .ps-sidebar-container {
+  background-color: #1c2433;
+  color: #e0e0e0;
+  border-top-right-radius: 40px;
+  border-right: none;
+  padding-top: 1rem;
+}
+
+.my-sidebar-container .ps-sidebar-container .menu-item {
+  color: #e0e0e0;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.my-sidebar-container .ps-sidebar-container .menu-item:hover {
+  background-color: #0dcaf0;
+  color: #131a2a;
+  border-radius: 10px;
+}
+
+/* ================= Logo */
+.my-sidebar-container .ps-sidebar-container img {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.my-sidebar-container .ps-sidebar-container img:hover {
+  transform: scale(1.1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
