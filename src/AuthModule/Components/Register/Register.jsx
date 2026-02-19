@@ -18,7 +18,7 @@ export default function Register() {
 
     try {
       let response = await axios.post(
-        "https://aiservice.magacademy.co/v2/signin",
+        "https://aiservice.magacademy.co/v2/signup",
         data,
       );
       navigate("/login");
