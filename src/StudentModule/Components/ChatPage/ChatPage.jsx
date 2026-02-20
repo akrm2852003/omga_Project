@@ -9,10 +9,10 @@ import {
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
 import axios from "axios";
-import SideBar from "../../../SharedModule/SideBar/SideBar";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
 import { UserContext } from "../../../Context/AuthContext/AuthContext";
+import formatMessage from "./chatFormatter"; // ← import the formatter
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -35,6 +35,8 @@ export default function ChatPage() {
       );
       const formattedMessages = response.data.chat.map((msg) => ({
         message: msg.text,
+        // For AI messages, store the formatted HTML version
+        formattedMessage: msg.role !== "user" ? formatMessage(msg.text) : null,
         sender: msg.role === "user" ? "You" : "AI",
         direction: msg.role === "user" ? "outgoing" : "incoming",
         sentTime: "just now",
@@ -74,21 +76,21 @@ export default function ChatPage() {
       const returnedId = response.data?.question_id;
       const aiReply = response.data?.response;
 
-      /* لو أول رسالة */
+      /* First message in a new chat */
       if (!currentChatId && returnedId) {
         setCurrentChatId(returnedId);
         setUserChatsId((prev) => {
           if (prev.includes(returnedId)) return prev;
           return [...prev, returnedId];
         });
-
         navigate(`/home/chat/${returnedId}`);
       }
 
-      /* إضافة رد AI */
+      /* Add AI reply with formatted HTML */
       if (aiReply) {
         const aiMessage = {
           message: aiReply,
+          formattedMessage: formatMessage(aiReply), // ← apply formatter
           sender: "AI",
           direction: "incoming",
           sentTime: "just now",
@@ -105,6 +107,7 @@ export default function ChatPage() {
   function handleSubmit(text) {
     const userMessage = {
       message: text,
+      formattedMessage: null, // user messages are plain text
       sender: "You",
       direction: "outgoing",
       sentTime: "just now",
@@ -114,44 +117,60 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="container-fluid p-0 d-flex">
-      {/* Sidebar */}
-      {/* <div className="sidebar">
-        <SideBar userEmail={userEmail} />
-      </div> */}
-
+    <div className="container-fluid p-0 d-flex" style={{ height: "100dvh" }}>
       {/* Chat Area */}
-     <div className="ai-chat-container d-flex justify-content-center align-items-center  vh-90 w-100 p-2">
-  <MainContainer className="shadow-lg p-3  custom-w-h rounded-3 border-1 h-100 w-100  ">
-    <ChatContainer className="h-100 d-flex flex-column">
-      <MessageList
-        className="flex-grow-1 overflow-auto"
-        typingIndicator={
-          isTyping ? <TypingIndicator content="AI is typing..." /> : null
-        }
-      >
-        {messages.map((message, index) => (
-          <Message
-            key={index}
-            model={{
-              message: message.message,
-              sentTime: message.sentTime,
-              sender:
-                message.sender.toLowerCase() === "you" ? "user" : "ai",
-              direction: message.direction,
-            }}
-          />
-        ))}
-      </MessageList>
+      <div className="ai-chat-container d-flex justify-content-center align-items-center w-100 p-2">
+        <MainContainer className="shadow-lg rounded-3 h-100 w-100">
+          <ChatContainer className=" d-flex flex-column">
+            <MessageList
+              className="flex-grow-1  overflow-auto"
+              typingIndicator={
+                isTyping ? <TypingIndicator content="AI is typing..." /> : null
+              }
+            >
+              {messages.map((message, index) => {
+                const isAI = message.sender.toLowerCase() !== "you";
 
-      <MessageInput
-        onSend={handleSubmit}
-        placeholder="Type message here"
-      />
-    </ChatContainer>
-  </MainContainer>
-</div>
+                return (
+                  <Message
+                    
+                    key={index}
+                    model={{
+                      // For AI messages we render HTML; pass a placeholder so
+                      // chatscope renders the bubble, then we override content.
+                      message: isAI
+                        ? " " // placeholder – real content injected below
+                        : message.message,
+                      sentTime: message.sentTime,
+                      sender: isAI ? "ai" : "user",
+                      direction: message.direction,
+                      type: "html", // tells chatscope to accept html payload
+                    }}
+                  >
+                    {/* Custom HTML content for AI messages */}
+                    {isAI && message.formattedMessage ? (
+                      <Message.CustomContent className="ms-bg ">
+                        <div
+                          className="custom-message-content  "
+                          dangerouslySetInnerHTML={{
+                            __html: message.formattedMessage,
+                          }}
+                        />
+                      </Message.CustomContent>
+                    ) : null}
+                  </Message>
+                );
+              })}
+            </MessageList>
 
+            <MessageInput
+              onSend={handleSubmit}
+              placeholder="Type message here"
+            />
+          </ChatContainer>
+        </MainContainer>
+      </div>
     </div>
   );
 }
+‍

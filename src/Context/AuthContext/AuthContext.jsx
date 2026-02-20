@@ -4,28 +4,18 @@ export const UserContext = createContext();
 
 export default function AuthContextProvider({ children }) {
   const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
+
   const [userEmail, setUserEmail] = useState(
-    localStorage.getItem("userEmail") || null,
+    localStorage.getItem("userEmail")?.trim().toLowerCase() || null,
   );
+
   const [userName, setUserName] = useState(
     localStorage.getItem("userName") || "",
   );
 
-  // دالة Logout
   function logout() {
-    // مسح البيانات من localStorage
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userChatsIdsByEmail");
-
-    // إعادة تعيين State
-    setUserId(null);
-    setUserEmail(null);
-    setUserName("");
-
-    // إعادة توجيه المستخدم للصفحة الرئيسية أو صفحة تسجيل الدخول
-    window.location.href = "/login"; // أو استخدم useNavigate في حالة React Router
+    localStorage.clear();
+    window.location.href = "/login";
   }
 
   return (
@@ -37,7 +27,7 @@ export default function AuthContextProvider({ children }) {
         setUserEmail,
         userName,
         setUserName,
-        logout, // تمرير الدالة للـContext
+        logout,
       }}
     >
       {children}

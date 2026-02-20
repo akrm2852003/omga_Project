@@ -7,8 +7,7 @@ import { UserContext } from "../../../Context/AuthContext/AuthContext";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
 
 export default function Login() {
-  const { setUserId, setUserEmail, userName, setUserName } =
-    useContext(UserContext);
+  const { setUserId, setUserEmail, setUserName } = useContext(UserContext);
   const { setUserChatsId } = useContext(UserChatsId);
 
   const {
@@ -29,18 +28,18 @@ export default function Login() {
       const user = response.data.user;
       const chats = response.data.chats || [];
 
-      /* حفظ البيانات */
+      // حفظ بيانات المستخدم في localStorage
       localStorage.setItem("userId", user.user_id);
       localStorage.setItem("userEmail", user.user_email);
       localStorage.setItem("userName", user.user_name);
 
-      /* تحديث Auth Context */
+      // حفظ الشاتس في localStorage مباشرة
+      localStorage.setItem("userChatsId", JSON.stringify(chats));
+
+      // تحديث Contexts
       setUserId(user.user_id);
       setUserEmail(user.user_email);
-      setUserName(user.user_name)
-
-
-      /* تحديث Chats Context */
+      setUserName(user.user_name);
       setUserChatsId(chats);
 
       navigate("/home");
@@ -66,7 +65,7 @@ export default function Login() {
                   </span>
                   <input
                     {...register("user_email", {
-                      required: "email is required",
+                      required: "Email is required",
                     })}
                     type="email"
                     className="form-control"
@@ -76,19 +75,19 @@ export default function Login() {
 
                 <div className="links d-flex justify-content-between">
                   <Link
-                    className=" text-decoration-none  d-flex justify-content-center align-items-center  link-style"
+                    className="text-decoration-none link-style"
                     to={"/register"}
                   >
                     Register Now?
                   </Link>
                   <Link
-                    className=" text-decoration-none d-flex justify-content-center align-items-center link-style"
+                    className="text-decoration-none link-style"
                     to={"/forget-pass"}
                   >
                     Forgot Password?
                   </Link>
                 </div>
-                <button className=" w-100 m-auto d-block mt-3 login-btn-style ">
+                <button className="w-100 m-auto d-block mt-3 login-btn-style">
                   Login
                 </button>
               </form>

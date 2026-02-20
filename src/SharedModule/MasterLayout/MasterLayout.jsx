@@ -12,7 +12,7 @@ export default function MasterLayout() {
       </div>
 
       {/* Main Content */}
-      <div className="d-flex flex-column w-100 h-100 overflow-hidden   m-3">
+      <div className="d-flex flex-column w-100 h-100 overflow-hidden  m-3">
         <NavBar />
 
         {/* Chat or other content */}

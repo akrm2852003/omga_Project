@@ -13,7 +13,7 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="navbar-custom navbar-expand-lg d-flex align-items-center px-3">
+    <nav className="navbar-custom navbar-expand-lg d-flex align-items-center  mx-2 px-3">
       <a className="navbar-brand fw-bold text-light me-auto" href="#">
         MyChatApp
       </a>

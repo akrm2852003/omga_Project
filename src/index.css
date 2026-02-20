@@ -275,11 +275,37 @@ svg:not(:host).svg-inline--fa:hover {
 
 
 .vh-90{
-  height: 90vh;
+  height: 50vh;
 }
 
 .w-90{
   width: 50%;
 }
+
+.ms-bg{
+  background-color: #1c2433;
+
+}
+
+
+.cs-message--incoming .cs-message__content, .cs-message--outgoing .cs-message__content{
+  background-color: #1c2433 !important;
+
+}
+
+.cs-message__html-content{
+  color: white !important;
+}
+.custom-message-content  p  ,.chat-tip{
+  text-align: right;
+}
+
+.chat-subtitle {
+  color: #5fdcf5 !important;
+}
+ .chat-funny{
+  color: yellowgreen !important;
+}
+
 
 
