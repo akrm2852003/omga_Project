@@ -1,135 +1,127 @@
 import "./chatFormatter.css";
 
 const formatMessage = (text = "") => {
-  let formatted = text.trim();
+    let formatted = text.trim();
 
-  // ================= Escape HTML first =================
-  // (optional safety – skip if backend already sanitizes)
+    /* ================= حماية أي HTML Blocks ووضعها داخل frame ================= */
+    const htmlPlaceholders = [];
+    const HTML_TOKEN = (i) => `⟦HTML_${i}⟧`;
 
-  // ================= Code blocks FIRST (protect content) =================
-  const codeBlocks = [];
-  formatted = formatted.replace(/```([\s\S]+?)```/g, (match, code) => {
-    const idx = codeBlocks.length;
-    codeBlocks.push(`<pre class="chat-code">${code}</pre>`);
-    return `%%CODE_BLOCK_${idx}%%`;
-  });
+    formatted = formatted.replace(
+        /<div[\s\S]*?<\/div>|<img[\s\S]*?>|<svg[\s\S]*?<\/svg>/gi,
+        (match) => {
+            const key = HTML_TOKEN(htmlPlaceholders.length);
+            // نضع أي HTML في frame خاص
+            const framed = `<div class="chat-html-frame">${match}</div>`;
+            htmlPlaceholders.push(framed);
+            return key;
+        }
+    );
 
-  // ================= Markdown headers =================
-  formatted = formatted.replace(
-    /^#{3}\s+(.+)$/gm,
-    '<h3 class="chat-heading h3">$1</h3>',
-  );
-  formatted = formatted.replace(
-    /^#{2}\s+(.+)$/gm,
-    '<h2 class="chat-heading h2">$1</h2>',
-  );
-  formatted = formatted.replace(
-    /^#\s+(.+)$/gm,
-    '<h1 class="chat-heading h1">$1</h1>',
-  );
+    /* ================= حماية المعادلات بين $...$ ================= */
+    const mathPlaceholders = [];
+    const MATH_TOKEN = (i) => `⟦MATH_${i}⟧`;
 
-  // ================= Bold / Italic =================
-  formatted = formatted.replace(
-    /\*\*(.+?)\*\*/g,
-    '<span class="chat-subtitle">$1</span>',
-  );
-  formatted = formatted.replace(
-    /\*(.+?)\*/g,
-    '<em class="chat-italic">$1</em>',
-  );
+    formatted = formatted.replace(/\$(.+?)\$/g, (_, expr) => {
+        const key = MATH_TOKEN(mathPlaceholders.length);
 
-  // ================= Inline highlight between parentheses =================
-  // Only highlight if content is short (avoid wrapping whole sentences)
-  formatted = formatted.replace(
-    /\(([^()\n]{1,60})\)/g,
-    '<span class="chat-inline-highlight">($1)</span>',
-  );
+        const cleaned = expr
+            .replace(/\\xrightarrow\{\\text\{([^}]+)\}\}/g, "→ $1")
+            .replace(/\\xrightarrow\{([^}]+)\}/g, "→ $1")
+            .replace(/\\rightarrow/g, "→")
+            .replace(/\\left|\\right/g, "");
 
-  // ================= Bullet lists (* item or - item) =================
-  formatted = formatted.replace(/(^|\n)[*-]\s+(.+)/g, (match, pre, item) => {
-    return `${pre}<li class="chat-list-item">${item}</li>`;
-  });
-  // Wrap consecutive <li> elements in <ul>
-  formatted = formatted.replace(
-    /(<li class="chat-list-item">[\s\S]+?<\/li>)(\n<li class="chat-list-item">[\s\S]+?<\/li>)*/g,
-    (match) => `<ul class="chat-list">${match}</ul>`,
-  );
+        mathPlaceholders.push(
+            `<span class="chat-inline-math">${cleaned}</span>`
+        );
 
-  // ================= Tips / quotes =================
-  formatted = formatted.replace(
-    /💡\s*(.+)/g,
-    '<blockquote class="chat-tip">💡 $1</blockquote>',
-  );
+        return key;
+    });
 
-  // ================= Arrows =================
-  formatted = formatted.replace(
-    /(→|←|➡|⬅)/g,
-    '<span class="chat-arrow">$1</span>',
-  );
+    /* ================= Headers ================= */
+    formatted = formatted.replace(/^### (.+)$/gm, '<h3 class="chat-heading h3">$1</h3>');
+    formatted = formatted.replace(/^## (.+)$/gm, '<h2 class="chat-heading h2">$1</h2>');
+    formatted = formatted.replace(/^# (.+)$/gm, '<h1 class="chat-heading h1">$1</h1>');
 
-  // ================= References 📚 =================
-  formatted = formatted.replace(
-    /(^|\n)(📚[^\n]+)/g,
-    (match, pre, content) =>
-      `${pre}<p class="chat-paragraph chat-reference">${content.trim()}</p>`,
-  );
+    /* ================= Bold / Italic ================= */
+    formatted = formatted.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<span class="chat-subtitle">$1</span>');
+    formatted = formatted.replace(/\*(.+?)\*/g, '<em class="chat-italic">$1</em>');
 
-  // ================= Book / image paragraphs 📖 =================
-  formatted = formatted.replace(
-    /(^|\n)(📖[^\n]+)/g,
-    (match, pre, content) =>
-      `${pre}<p class="chat-paragraph chat-book">${content.trim()}</p>`,
-  );
+    /* ================= Lists ================= */
+    formatted = formatted.replace(/(^|\n)\*\s+/g, "$1• ");
 
-  // ================= Remove excessive blank lines =================
-  formatted = formatted.replace(/\n{3,}/g, "\n\n");
+    /* ================= Code ================= */
+    formatted = formatted.replace(/```([\s\S]+?)```/g, '<pre class="chat-code">$1</pre>');
+    formatted = formatted.replace(/`([^`]+)`/g, '<code class="chat-inline-code">$1</code>');
 
-  // ================= General paragraphs =================
-  // Split by newlines and wrap plain text lines that aren't already HTML
-  const lines = formatted.split("\n");
-  const processedLines = lines.map((line) => {
-    const trimmed = line.trim();
-    if (!trimmed) return "";
+    /* ================= Superscript ================= */
+    formatted = formatted.replace(
+        /([A-Za-z0-9\]\)])\^(\d+)/g,
+        '$1<sup>$2</sup>'
+    );
 
-    // Skip lines already wrapped in HTML tags
-    if (/^<(h[1-3]|p|ul|li|pre|blockquote|div)/.test(trimmed)) return line;
-    // Skip placeholder tokens
-    if (/^%%CODE_BLOCK_\d+%%$/.test(trimmed)) return line;
+    /* ================= Tips ================= */
+    formatted = formatted.replace(
+        /💡\s*(.+)/g,
+        '<blockquote class="chat-tip-paragraph">$1</blockquote>'
+    );
 
-    let className = "chat-paragraph";
+    /* ================= Paragraph Wrapper ================= */
+    formatted = formatted.replace(
+        /(^|\n)(?!<h|<pre|<blockquote|<div|⟦MATH_)([^<\n].+?)(?=\n|$)/g,
+        (m, p1, line) => {
+            let cls = "chat-paragraph card-step";
+            let txt = line;
 
-    if (/^🎭/.test(trimmed)) {
-      className += " chat-funny";
-      return `<p class="${className}">${trimmed.replace(/^🎭\s*/, "")}</p>`;
-    } else if (/^🔹/.test(trimmed)) {
-      className += " chat-scientific";
-      return `<p class="${className}">${trimmed.replace(/^🔹\s*/, "")}</p>`;
-    } else if (/^💡/.test(trimmed)) {
-      // already handled above, skip
-      return line;
-    } else if (/^📚/.test(trimmed) || /^📖/.test(trimmed)) {
-      // already handled above, skip
-      return line;
-    }
+            if (txt.startsWith("🔹")) {
+                cls += " chat-scientific";
+                txt = txt.replace(/^🔹\s*/, "");
+            } else if (txt.startsWith("🎭")) {
+                cls = "chat-paragraph chat-funny";
+                txt = txt.replace(/^🎭\s*/, "");
+            } else if (txt.startsWith("💡")) {
+                cls += " chat-tip-paragraph";
+                txt = txt.replace(/^💡\s*/, "");
+            } else if (txt.startsWith("⚛️")) {
+                cls += " chat-math-card";
+                txt = txt.replace(/^⚛️\s*/, "");
+            } else if (/→|Δ|heat|catalyst/i.test(txt)) {
+                cls = "chat-math-card";
+            }
 
-    return `<p class="${className}">${trimmed}</p>`;
-  });
+            return `${p1}<p class="${cls}">${txt}</p>`;
+        }
+    );
 
-  formatted = processedLines.join("\n");
+    /* ================= Highlight الشروط ================= */
+    formatted = formatted.replace(
+        /\((Δ|Heat|°C|Ni|Pt|MnO₂|catalyst|حرارة)\)/gi,
+        '<span class="chat-inline-highlight-important">($1)</span>'
+    );
 
-  // ================= Restore code blocks =================
-  codeBlocks.forEach((block, idx) => {
-    formatted = formatted.replace(`%%CODE_BLOCK_${idx}%%`, block);
-  });
+    formatted = formatted.replace(
+        /\(([^()]+)\)/g,
+        '<span class="chat-inline-highlight">($1)</span>'
+    );
 
-  // ================= Cleanup: p tags wrapping block elements =================
-  formatted = formatted.replace(
-    /<p class="chat-paragraph">\s*(<h[1-3])/g,
-    "$1",
-  );
-  formatted = formatted.replace(/(<\/h[1-3]>)\s*<\/p>/g, "$1");
+    /* ================= Highlight Numbers ================= */
+    formatted = formatted.replace(
+        /\b\d+(\.\d+)?\b/g,
+        '<span class="chat-inline-number">$&</span>'
+    );
 
-  return formatted;
+    /* ================= رجوع المعادلات ================= */
+    mathPlaceholders.forEach((math, i) => {
+        formatted = formatted.replace(MATH_TOKEN(i), math);
+    });
+
+    /* ================= رجوع HTML ================= */
+    htmlPlaceholders.forEach((html, i) => {
+        formatted = formatted.replace(HTML_TOKEN(i), html);
+    });
+
+    return formatted;
 };
 
 export default formatMessage;

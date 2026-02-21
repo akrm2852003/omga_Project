@@ -15,7 +15,7 @@ export default function NavBar() {
   return (
     <nav className="navbar-custom navbar-expand-lg d-flex align-items-center  mx-2 px-3">
       <a className="navbar-brand fw-bold text-light me-auto" href="#">
-        MyChatApp
+       Chat omGa
       </a>
 
       <ul className="navbar-nav ms-auto align-items-center">

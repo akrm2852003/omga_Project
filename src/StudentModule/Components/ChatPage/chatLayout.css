@@ -1,0 +1,58 @@
+html,
+body,
+#root {
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.chat-wrapper {
+    height: 100vh;
+    width: 100%;
+    background: #f4f6fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.chat-main {
+    width: 100%;
+    max-width: 900px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.chat-message-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+
+/* input ثابت */
+
+.cs-message-input {
+    border-top: 1px solid #eee;
+    padding: 10px;
+    flex-shrink: 0;
+    background: #fff;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+}
+
+
+/* يحمي محتوى HTML من الـ backend */
+
+.custom-message-content>div,
+.custom-message-content>img,
+.custom-message-content>svg {
+    all: unset;
+    /* يوقف أي تأثير CSS من الخارج */
+    display: block;
+    /* للتأكد من عرضها صحيح */
+}

@@ -89,7 +89,7 @@ export default function Register() {
                       className=" text-decoration-none link-style"
                       to={"/login"}
                     >
-                      Login Now?
+                      Login Now
                     </Link>
                   </div>
                   <button className=" w-100 m-auto d-block mt-3 login-btn-style ">

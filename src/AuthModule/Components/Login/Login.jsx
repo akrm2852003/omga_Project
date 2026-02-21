@@ -78,13 +78,7 @@ export default function Login() {
                     className="text-decoration-none link-style"
                     to={"/register"}
                   >
-                    Register Now?
-                  </Link>
-                  <Link
-                    className="text-decoration-none link-style"
-                    to={"/forget-pass"}
-                  >
-                    Forgot Password?
+                    Register Now
                   </Link>
                 </div>
                 <button className="w-100 m-auto d-block mt-3 login-btn-style">
