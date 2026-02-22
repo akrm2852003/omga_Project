@@ -404,3 +404,21 @@ svg:not(:host).svg-inline--fa:hover {
      height: 100vh ;
   }
 }
+
+
+
+.ai-chat-container {
+  height: 100%;
+}
+
+.cs-chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cs-message-list {
+  flex-grow: 1;
+  overflow-y: auto; /* Scroll جوه الرسائل */
+  padding: 10px;
+}

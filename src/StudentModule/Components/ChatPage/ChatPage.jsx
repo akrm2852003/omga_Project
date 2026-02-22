@@ -111,10 +111,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="chat-layout">
-      <div className="chat-center">
-        <MainContainer className="chat-main">
-          <ChatContainer className="chat-container">
+    <div className="chat-layout w-100 h-100">
+      <div className="chat-center w-100 h-100">
+        <MainContainer className="chat-main w-100 h-100">
+          <ChatContainer className=" p-0 w-100">
             <MessageList
               className="chat-messages"
               typingIndicator={isTyping ? <TypingIndicator content="AI is typing..." /> : null}
