@@ -195,3 +195,144 @@ body,
     min-height: 50px;
   }
 }
+
+
+
+.custom-message-content {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.custom-message-content img,
+.custom-message-content svg,
+.custom-message-content video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.chat-messages,
+.custom-message-content {
+    overflow-x: auto;
+}
+
+
+@media (max-width: 768px) {
+    .custom-message-content img,
+    .custom-message-content svg,
+    .custom-message-content video {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+
+/* ====== Input Bar ====== */
+.input-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-bar__message {
+  flex: 1;
+  min-width: 0;
+}
+
+/* اجبر MessageInput يملا المساحة كلها */
+.input-bar__message .cs-message-input {
+  border: none !important;
+  border-top: none !important;
+  padding: 0 !important;
+}
+
+.chat-icon-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.chat-icon-btn:hover {
+  background: #e8e8e8;
+}
+
+/* ====== Camera Modal ====== */
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.camera-modal {
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 90%;
+  max-width: 480px;
+}
+
+.camera-preview {
+  width: 100%;
+  border-radius: 10px;
+  background: #000;
+}
+
+.camera-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-capture {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-capture:hover {
+  background: #43a047;
+}
+
+.btn-close-camera {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-close-camera:hover {
+  background: #c62828;
+}

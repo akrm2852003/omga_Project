@@ -54,6 +54,7 @@ export default function SideBar({ isOpen, closeSidebar }) {
         </div>
 
         <MenuItem
+          className="text-white"
           onClick={() => navigate("/home")}
           icon={<i className="fa-solid fa-plus"></i>}
         >
@@ -63,7 +64,7 @@ export default function SideBar({ isOpen, closeSidebar }) {
         {userChats.length > 0 ? (
           userChats.map((chat) => (
             <MenuItem
-            className="text-white"
+              className="text-white"
               key={chat.question_id}
               onClick={() => navigate(`/home/chat/${chat.question_id}`)}
               icon={<i className="fa-solid fa-robot"></i>}
