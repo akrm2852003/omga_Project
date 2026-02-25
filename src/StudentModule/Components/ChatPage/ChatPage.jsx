@@ -39,16 +39,40 @@ export default function ChatPage() {
     const handleCopy = (e) => {
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed) return;
-
       const plainText = selection.toString();
-
       e.clipboardData.setData("text/plain", plainText);
       e.clipboardData.setData("text/html", plainText);
       e.preventDefault();
     };
-
     document.addEventListener("copy", handleCopy);
     return () => document.removeEventListener("copy", handleCopy);
+  }, []);
+
+  // ✅ Paste image: لما اليوزر يعمل Ctrl+V بصورة، تتحط كـ pendingImage
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (!file) continue;
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setPendingImage({ previewSrc: reader.result, file });
+          };
+          reader.readAsDataURL(file);
+
+          e.preventDefault(); // منع أي سلوك تاني للـ paste
+          break;
+        }
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
   }, []);
 
   async function getChat(chatId) {

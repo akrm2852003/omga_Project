@@ -8,7 +8,7 @@ body,
     font-family: 'Cairo', sans-serif;
 }
 
-/* Allow pinch-to-zoom on mobile */
+/* ✅ Allow pinch-to-zoom on mobile - مهم للـ zoom */
 html, body {
   touch-action: pan-x pan-y pinch-zoom;
 }
@@ -63,8 +63,11 @@ html, body {
 .chat-messages {
     flex: 1 1 auto;
     overflow-y: auto;
+    overflow-x: hidden; /* ✅ منع الـ horizontal scroll على مستوى القائمة */
     padding: 15px;
     min-height: 0;
+    /* ✅ السماح بالـ pinch-to-zoom داخل قائمة الرسائل */
+    touch-action: pan-y pinch-zoom;
 }
 
 /* ===== Input Area ===== */
@@ -93,6 +96,16 @@ html, body {
 
 .cs-message-input {
     flex-shrink: 0 !important;
+}
+
+/* ✅ السماح بالـ pinch-to-zoom في كل عناصر chatscope وكل الصفحة */
+* {
+    touch-action: pan-y pinch-zoom !important;
+}
+
+/* استثناء الـ input عشان يشتغل صح */
+input, textarea, [contenteditable] {
+    touch-action: auto !important;
 }
 
 /* ===== Responsive Tweaks ===== */
@@ -141,19 +154,17 @@ html, body {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    overflow-x: visible; /* ✅ منع الـ scroll الداخلي في الرسالة */
 }
 
+/* ✅ الصور والـ SVG تتكيف مع حجم الرسالة بدون scroll */
 .custom-message-content img,
 .custom-message-content svg,
 .custom-message-content video {
     max-width: 100%;
+    width: 100%;
     height: auto;
     display: block;
-}
-
-.chat-messages,
-.custom-message-content {
-    overflow-x: auto;
 }
 
 @media (max-width: 768px) {
@@ -161,6 +172,7 @@ html, body {
     .custom-message-content svg,
     .custom-message-content video {
         max-width: 100%;
+        width: 100%;
         height: auto;
     }
 }

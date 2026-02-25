@@ -86,7 +86,7 @@
     font-size: 1.05rem;
     line-height: 1.95;
     margin: 18px 0;
-    color: var(--text-secondary);
+    color: white !important;
 }
 
 .chat-italic {
@@ -120,7 +120,7 @@
     padding: 14px 16px;
     border-radius: 12px;
     font-style: italic;
-    color: #713f12;
+    color: #713f12 !important;
 }
 
 
@@ -136,14 +136,16 @@
 }
 
 
-/* ================= Step Card ================= */
+/* ================= Step Card — ✅ التعديل الوحيد ================= */
 
 .card-step {
-    background: #f8fafc;
-    border: 1px solid var(--border-soft);
-    padding: 16px 18px;
-    margin: 16px 0;
-    border-radius: 14px;
+    /* ✅ شيلنا بس: background, border, border-radius, padding الكبير */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    /* ✅ قللنا المسافة بين الجمل بس */
+    margin: 4px 0;
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -243,42 +245,41 @@
 
 .chat-html-frame {
     all: unset;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: block;
     width: 100%;
+    box-sizing: border-box;
     margin: 14px 0;
     padding: 16px;
     background: #ffffff;
-    /* 👈 الخلفية البيضا */
     border-radius: 14px;
-    /* شكل أنضف */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    /* ظل خفيف */
+    overflow: hidden;
 }
 
-
-/* الصورة */
-
 .chat-html-frame img {
-    max-width: 80%;
+    max-width: 100%;
+    width: 100%;
     height: auto;
     display: block;
     border-radius: 12px;
 }
 
-
-/* أي SVG */
-
 .chat-html-frame svg {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
     background: #ffffff;
 }
 
-
-/* يخلي النص جوه الفريم يرجع أسود طبيعي */
+.chat-html-frame div {
+    max-width: 100%;
+    overflow: hidden;
+}
 
 .chat-html-frame * {
     color: #000;
+    box-sizing: border-box;
 }
 
 
@@ -288,6 +289,8 @@
     direction: rtl;
     text-align: right;
     line-height: 1.95;
+    overflow-x: hidden;
+    touch-action: pan-y pinch-zoom;
 }
 
 
