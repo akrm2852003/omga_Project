@@ -8,6 +8,10 @@ body,
     font-family: 'Cairo', sans-serif;
 }
 
+/* Allow pinch-to-zoom on mobile */
+html, body {
+  touch-action: pan-x pan-y pinch-zoom;
+}
 
 /* ===== Layout Wrapper ===== */
 
@@ -21,7 +25,6 @@ body,
     overflow: hidden;
 }
 
-
 /* ===== Center Box - Full Width ===== */
 
 .chat-center {
@@ -33,7 +36,6 @@ body,
     align-items: stretch;
     box-shadow: 0px 5px 4px rgba(0, 0, 0, 0.075) !important;
 }
-
 
 /* ===== Main Chat Box ===== */
 
@@ -47,7 +49,6 @@ body,
     min-height: 0;
 }
 
-
 /* ===== Container ===== */
 
 .chat-container {
@@ -57,7 +58,6 @@ body,
     min-height: 0;
 }
 
-
 /* ===== Message Area ===== */
 
 .chat-messages {
@@ -66,7 +66,6 @@ body,
     padding: 15px;
     min-height: 0;
 }
-
 
 /* ===== Input Area ===== */
 
@@ -80,7 +79,6 @@ body,
     z-index: 10;
 }
 
-
 /* ===== Force Chatscope sizing ===== */
 
 .cs-main-container {
@@ -91,13 +89,11 @@ body,
     height: 100% !important;
 }
 
-
 /* ===== Chatscope Input Fix ===== */
 
 .cs-message-input {
     flex-shrink: 0 !important;
 }
-
 
 /* ===== Responsive Tweaks ===== */
 
@@ -117,19 +113,14 @@ body,
         min-height: 50px;
     }
 
-    /* ✅ الإصلاح الأساسي للموبايل */
     .chat-layout {
-        /* بدل 90vh بنستخدم dvh عشان يحسب صح مع browser chrome */
         height: 100dvh;
-        /* fallback للمتصفحات القديمة */
         height: calc(100vh - env(safe-area-inset-bottom));
-        /* نخلي الـ layout يبدأ من أول الصفحة */
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        /* نأكد إن الـ input مش بيتغطى */
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
@@ -143,8 +134,6 @@ body,
         margin: 0;
     }
 }
-}
-
 
 /* ====== Custom Message ====== */
 
@@ -175,7 +164,6 @@ body,
         height: auto;
     }
 }
-
 
 /* ====== Input Bar ====== */
 
@@ -229,6 +217,15 @@ body,
     background: #e8e8e8;
 }
 
+.chat-send-btn {
+    background: #0dcaf0;
+    border-color: #0dcaf0;
+    color: white;
+}
+
+.chat-send-btn:hover {
+    background: #09b4d8;
+}
 
 /* ====== Camera Modal ====== */
 
@@ -295,7 +292,6 @@ body,
     background: #c62828;
 }
 
-
 /* ======== Pending Image Preview ======== */
 
 .pending-image-preview {
@@ -333,6 +329,3 @@ body,
 .pending-image-remove:hover {
     background: rgba(200, 0, 0, 0.8);
 }
-
-
-

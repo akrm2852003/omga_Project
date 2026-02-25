@@ -27,17 +27,30 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-
-  // ← الجديد: pending image قبل الإرسال
-  const [pendingImage, setPendingImage] = useState(null); // { previewSrc, file }
+  const [pendingImage, setPendingImage] = useState(null);
+  const [inputText, setInputText] = useState("");
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  /* ==========================
-        GET OLD CHAT
-  ========================== */
+  // ✅ Fix: لما اليوزر يعمل copy، ياخد plain text بس من غير فورمات أو ألوان
+  useEffect(() => {
+    const handleCopy = (e) => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) return;
+
+      const plainText = selection.toString();
+
+      e.clipboardData.setData("text/plain", plainText);
+      e.clipboardData.setData("text/html", plainText);
+      e.preventDefault();
+    };
+
+    document.addEventListener("copy", handleCopy);
+    return () => document.removeEventListener("copy", handleCopy);
+  }, []);
+
   async function getChat(chatId) {
     try {
       const response = await axios.get(
@@ -68,9 +81,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((track) => track.stop());
-      }
+      if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
     };
   }, [cameraStream]);
 
@@ -81,13 +92,9 @@ export default function ChatPage() {
     }
   }, [showCamera, cameraStream]);
 
-  /* ==========================
-        SEND MESSAGE
-  ========================== */
   async function sendMessage(text) {
     try {
       setIsTyping(true);
-
       const response = await axios.post(
         "https://aiservice.magacademy.co/ask-by-question-id-v2",
         {
@@ -96,10 +103,8 @@ export default function ChatPage() {
           ...(currentChatId && { question_id: currentChatId }),
         },
       );
-
       const returnedId = response.data?.question_id;
       const aiReply = response.data?.response;
-
       if (!currentChatId && returnedId) {
         setCurrentChatId(returnedId);
         setUserChatsId((prev) =>
@@ -107,7 +112,6 @@ export default function ChatPage() {
         );
         navigate(`/home/chat/${returnedId}`);
       }
-
       if (aiReply) {
         setMessages((prev) => [
           ...prev,
@@ -135,13 +139,11 @@ export default function ChatPage() {
       formData.append("image", file);
       formData.append("user_email", userEmail);
       if (currentChatId) formData.append("question_id", currentChatId);
-
       const response = await axios.post(
         "https://aiservice.magacademy.co/ask-by-question-id-v2",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } },
       );
-
       if (response.data?.response) {
         setMessages((prev) => [
           ...prev,
@@ -176,16 +178,9 @@ export default function ChatPage() {
     ]);
   }
 
-  /* ==========================
-        ← الجديد: إرسال الـ pending image + نص اختياري
-  ========================== */
   function handleSubmit(text) {
-    // لو فيه صورة pending، نبعتها مع النص
     if (pendingImage) {
-      // نعرض الصورة في الشات
       showImageInChat(pendingImage.previewSrc);
-
-      // لو فيه نص، نعرضه كرسالة منفصلة
       if (text && text.trim()) {
         setMessages((prev) => [
           ...prev,
@@ -199,16 +194,11 @@ export default function ChatPage() {
           },
         ]);
       }
-
-      // نبعت الصورة للـ API
       uploadImageToAPI(pendingImage.file);
-
-      // نمسح الـ pending
       setPendingImage(null);
+      setInputText("");
       return;
     }
-
-    // إرسال نص عادي
     if (!text || !text.trim()) return;
     setMessages((prev) => [
       ...prev,
@@ -222,28 +212,41 @@ export default function ChatPage() {
       },
     ]);
     sendMessage(text);
+    setInputText("");
   }
 
-  /* ==========================
-        FILE UPLOAD → pending فقط
-  ========================== */
+  function handleImageOnlySend() {
+    if (!pendingImage) return;
+    showImageInChat(pendingImage.previewSrc);
+    if (inputText && inputText.trim()) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          message: inputText,
+          formattedMessage: null,
+          sender: "You",
+          direction: "outgoing",
+          sentTime: "just now",
+          isImage: false,
+        },
+      ]);
+    }
+    uploadImageToAPI(pendingImage.file);
+    setPendingImage(null);
+    setInputText("");
+  }
+
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onloadend = () => {
-      // بدل ما نبعت فوراً، نحط في pending
       setPendingImage({ previewSrc: reader.result, file });
     };
     reader.readAsDataURL(file);
-
     e.target.value = "";
   };
 
-  /* ==========================
-        CAMERA → pending فقط
-  ========================== */
   const openCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -268,23 +271,16 @@ export default function ChatPage() {
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-
     if (!video || !canvas) return;
-
     if (video.readyState !== 4) {
       alert("الكاميرا لسه مش جاهزة، استنى ثانية وحاول تاني");
       return;
     }
-
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-
     const previewSrc = canvas.toDataURL("image/jpeg", 0.9);
-
     closeCamera();
-
-    // بدل ما نبعت فوراً، نحط في pending
     canvas.toBlob(
       (blob) => {
         if (!blob) return;
@@ -298,9 +294,6 @@ export default function ChatPage() {
     );
   };
 
-  /* ==========================
-        RENDER
-  ========================== */
   return (
     <>
       {showCamera && (
@@ -340,7 +333,6 @@ export default function ChatPage() {
                 {messages.map((message, index) => {
                   const isAI = message.sender.toLowerCase() !== "you";
                   const isUserImage = !isAI && message.isImage;
-
                   return (
                     <Message
                       key={index}
@@ -362,7 +354,6 @@ export default function ChatPage() {
                           />
                         </Message.CustomContent>
                       )}
-
                       {isUserImage && (
                         <Message.CustomContent>
                           <img
@@ -382,7 +373,6 @@ export default function ChatPage() {
               </MessageList>
 
               <div as="MessageInput" className="input-bar">
-                {/* ← الجديد: Preview الصورة فوق الإدخال */}
                 {pendingImage && (
                   <div className="pending-image-preview">
                     <img src={pendingImage.previewSrc} alt="preview" />
@@ -418,18 +408,32 @@ export default function ChatPage() {
                     style={{ display: "none" }}
                     onChange={handleFileInputChange}
                   />
+
                   <div className="input-bar__message">
                     <MessageInput
                       className="chat-input"
                       onSend={handleSubmit}
+                      onChange={(val) => setInputText(val)}
+                      value={inputText}
                       placeholder={
                         pendingImage
                           ? "اكتب رسالة مع الصورة أو اضغط إرسال..."
                           : "Type message here..."
                       }
                       attachButton={false}
+                      sendButton={!pendingImage}
                     />
                   </div>
+
+                  {pendingImage && (
+                    <button
+                      className="chat-icon-btn chat-send-btn"
+                      onClick={handleImageOnlySend}
+                      title="إرسال"
+                    >
+                      ➤
+                    </button>
+                  )}
                 </div>
               </div>
             </ChatContainer>
