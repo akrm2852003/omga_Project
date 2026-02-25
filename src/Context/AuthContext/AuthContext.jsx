@@ -15,7 +15,8 @@ export default function AuthContextProvider({ children }) {
 
   function logout() {
     localStorage.clear();
-    window.location.href = "/login";
+    localStorage.removeItem("userChatsId");
+    window.location.href = "/";
   }
 
   return (
