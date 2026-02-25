@@ -28,6 +28,9 @@ export default function ChatPage() {
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
 
+  // ← الجديد: pending image قبل الإرسال
+  const [pendingImage, setPendingImage] = useState(null); // { previewSrc, file }
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -63,7 +66,6 @@ export default function ChatPage() {
     }
   }, [id]);
 
-  // إغلاق الكاميرا لما الكومبوننت يتشال
   useEffect(() => {
     return () => {
       if (cameraStream) {
@@ -72,7 +74,6 @@ export default function ChatPage() {
     };
   }, [cameraStream]);
 
-  // ربط الـ stream بالـ video بعد ما showCamera يبقى true
   useEffect(() => {
     if (showCamera && cameraStream && videoRef.current) {
       videoRef.current.srcObject = cameraStream;
@@ -127,25 +128,6 @@ export default function ChatPage() {
     }
   }
 
-  function handleSubmit(text) {
-    setMessages((prev) => [
-      ...prev,
-      {
-        message: text,
-        formattedMessage: null,
-        sender: "You",
-        direction: "outgoing",
-        sentTime: "just now",
-        isImage: false,
-      },
-    ]);
-    sendMessage(text);
-  }
-
-  /* ==========================
-        UPLOAD IMAGE TO API ONLY
-        (بدون ما تضيف رسالة في الشات)
-  ========================== */
   async function uploadImageToAPI(file) {
     try {
       setIsTyping(true);
@@ -180,26 +162,70 @@ export default function ChatPage() {
     }
   }
 
-  /* ==========================
-        SHOW IMAGE IN CHAT
-        (بتضيف الصورة في الشات بس من غير ما تبعت للـ API)
-  ========================== */
   function showImageInChat(previewSrc) {
     setMessages((prev) => [
       ...prev,
       {
         message: "",
-        formattedMessage: previewSrc, // base64 string
+        formattedMessage: previewSrc,
         sender: "You",
         direction: "outgoing",
         sentTime: "just now",
-        isImage: true, // ← flag مهم جداً
+        isImage: true,
       },
     ]);
   }
 
   /* ==========================
-        FILE / IMAGE UPLOAD FROM DEVICE
+        ← الجديد: إرسال الـ pending image + نص اختياري
+  ========================== */
+  function handleSubmit(text) {
+    // لو فيه صورة pending، نبعتها مع النص
+    if (pendingImage) {
+      // نعرض الصورة في الشات
+      showImageInChat(pendingImage.previewSrc);
+
+      // لو فيه نص، نعرضه كرسالة منفصلة
+      if (text && text.trim()) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            message: text,
+            formattedMessage: null,
+            sender: "You",
+            direction: "outgoing",
+            sentTime: "just now",
+            isImage: false,
+          },
+        ]);
+      }
+
+      // نبعت الصورة للـ API
+      uploadImageToAPI(pendingImage.file);
+
+      // نمسح الـ pending
+      setPendingImage(null);
+      return;
+    }
+
+    // إرسال نص عادي
+    if (!text || !text.trim()) return;
+    setMessages((prev) => [
+      ...prev,
+      {
+        message: text,
+        formattedMessage: null,
+        sender: "You",
+        direction: "outgoing",
+        sentTime: "just now",
+        isImage: false,
+      },
+    ]);
+    sendMessage(text);
+  }
+
+  /* ==========================
+        FILE UPLOAD → pending فقط
   ========================== */
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
@@ -207,17 +233,16 @@ export default function ChatPage() {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      showImageInChat(reader.result);
-      uploadImageToAPI(file);
+      // بدل ما نبعت فوراً، نحط في pending
+      setPendingImage({ previewSrc: reader.result, file });
     };
     reader.readAsDataURL(file);
 
-    // reset عشان تقدر ترفع نفس الفايل تاني
     e.target.value = "";
   };
 
   /* ==========================
-        CAMERA
+        CAMERA → pending فقط
   ========================== */
   const openCamera = async () => {
     try {
@@ -255,23 +280,18 @@ export default function ChatPage() {
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // نحفظ الـ base64 قبل ما نعمل أي حاجة
     const previewSrc = canvas.toDataURL("image/jpeg", 0.9);
 
-    // نعرض الصورة في الشات فوراً
-    showImageInChat(previewSrc);
-
-    // نقفل الكاميرا
     closeCamera();
 
-    // نبعت الصورة للـ API
+    // بدل ما نبعت فوراً، نحط في pending
     canvas.toBlob(
       (blob) => {
         if (!blob) return;
         const file = new File([blob], "camera-photo.jpg", {
           type: "image/jpeg",
         });
-        uploadImageToAPI(file);
+        setPendingImage({ previewSrc, file });
       },
       "image/jpeg",
       0.9,
@@ -281,124 +301,141 @@ export default function ChatPage() {
   /* ==========================
         RENDER
   ========================== */
-return (
-  <>
-    {/* ======== Camera Modal ======== */}
-    {showCamera && (
-      <div className="camera-overlay">
-        <div className="camera-modal">
-          <video
-            ref={videoRef}
-            className="camera-preview"
-            autoPlay
-            playsInline
-          />
-          <canvas ref={canvasRef} style={{ display: "none" }} />
-          <div className="camera-controls">
-            <button className="btn-capture" onClick={capturePhoto}>
-              📸 التقط صورة
-            </button>
-            <button className="btn-close-camera" onClick={closeCamera}>
-              ✕ إغلاق
-            </button>
+  return (
+    <>
+      {showCamera && (
+        <div className="camera-overlay">
+          <div className="camera-modal">
+            <video
+              ref={videoRef}
+              className="camera-preview"
+              autoPlay
+              playsInline
+            />
+            <canvas ref={canvasRef} style={{ display: "none" }} />
+            <div className="camera-controls">
+              <button className="btn-capture" onClick={capturePhoto}>
+                📸 التقط صورة
+              </button>
+              <button className="btn-close-camera" onClick={closeCamera}>
+                ✕ إغلاق
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-    {/* ======== Chat Layout ======== */}
-    <div className="chat-layout w-100 h-100">
-      <div className="chat-center w-100 h-100">
-        <MainContainer className="chat-main w-100 h-100">
-          <ChatContainer className="p-0 w-100">
-            <MessageList
-              className="chat-messages"
-              typingIndicator={
-                isTyping ? <TypingIndicator content="AI is typing..." /> : null
-              }
-            >
-              {messages.map((message, index) => {
-                const isAI = message.sender.toLowerCase() !== "you";
-                const isUserImage = !isAI && message.isImage;
+      <div className="chat-layout w-100 h-100">
+        <div className="chat-center w-100 h-100">
+          <MainContainer className="chat-main w-100 h-100">
+            <ChatContainer className="p-0 w-100">
+              <MessageList
+                className="chat-messages"
+                typingIndicator={
+                  isTyping ? (
+                    <TypingIndicator content="AI is typing..." />
+                  ) : null
+                }
+              >
+                {messages.map((message, index) => {
+                  const isAI = message.sender.toLowerCase() !== "you";
+                  const isUserImage = !isAI && message.isImage;
 
-                return (
-                  <Message
-                    key={index}
-                    model={{
-                      message: isAI || isUserImage ? " " : message.message,
-                      sentTime: message.sentTime,
-                      sender: isAI ? "ai" : "user",
-                      direction: message.direction,
-                      type: "html",
-                    }}
+                  return (
+                    <Message
+                      key={index}
+                      model={{
+                        message: isAI || isUserImage ? " " : message.message,
+                        sentTime: message.sentTime,
+                        sender: isAI ? "ai" : "user",
+                        direction: message.direction,
+                        type: "html",
+                      }}
+                    >
+                      {isAI && message.formattedMessage && (
+                        <Message.CustomContent>
+                          <div
+                            className="custom-message-content w-100"
+                            dangerouslySetInnerHTML={{
+                              __html: message.formattedMessage,
+                            }}
+                          />
+                        </Message.CustomContent>
+                      )}
+
+                      {isUserImage && (
+                        <Message.CustomContent>
+                          <img
+                            src={message.formattedMessage}
+                            alt="uploaded"
+                            style={{
+                              maxWidth: "220px",
+                              borderRadius: "10px",
+                              display: "block",
+                            }}
+                          />
+                        </Message.CustomContent>
+                      )}
+                    </Message>
+                  );
+                })}
+              </MessageList>
+
+              <div as="MessageInput" className="input-bar">
+                {/* ← الجديد: Preview الصورة فوق الإدخال */}
+                {pendingImage && (
+                  <div className="pending-image-preview">
+                    <img src={pendingImage.previewSrc} alt="preview" />
+                    <button
+                      className="pending-image-remove"
+                      onClick={() => setPendingImage(null)}
+                      title="إزالة الصورة"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                <div className="input-bar__controls">
+                  <button
+                    className="chat-icon-btn"
+                    onClick={openCamera}
+                    title="التقط صورة"
                   >
-                    {/* رسائل الـ AI */}
-                    {isAI && message.formattedMessage && (
-                      <Message.CustomContent>
-                        <div
-                          className="custom-message-content w-100"
-                          dangerouslySetInnerHTML={{
-                            __html: message.formattedMessage,
-                          }}
-                        />
-                      </Message.CustomContent>
-                    )}
-
-                    {/* صور اليوزر */}
-                    {isUserImage && (
-                      <Message.CustomContent>
-                        <img
-                          src={message.formattedMessage}
-                          alt="uploaded"
-                          style={{
-                            maxWidth: "220px",
-                            borderRadius: "10px",
-                            display: "block",
-                          }}
-                        />
-                      </Message.CustomContent>
-                    )}
-                  </Message>
-                );
-              })}
-            </MessageList>
-
-            {/* ======== شريط الإدخال مع الزرارين ======== */}
-            <div as="MessageInput" className="input-bar">
-              <button
-                className="chat-icon-btn"
-                onClick={openCamera}
-                title="التقط صورة"
-              >
-                📷
-              </button>
-              <button
-                className="chat-icon-btn"
-                onClick={() => fileInputRef.current?.click()}
-                title="ارفع صورة أو ملف"
-              >
-                📎
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,application/pdf,.doc,.docx"
-                style={{ display: "none" }}
-                onChange={handleFileInputChange}
-              />
-              <div className="input-bar__message">
-                <MessageInput
-                  className="chat-input"
-                  onSend={handleSubmit}
-                  placeholder="Type message here..."
-                  attachButton={false}
-                />
+                    📷
+                  </button>
+                  <button
+                    className="chat-icon-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    title="ارفع صورة أو ملف"
+                  >
+                    📎
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,application/pdf,.doc,.docx"
+                    style={{ display: "none" }}
+                    onChange={handleFileInputChange}
+                  />
+                  <div className="input-bar__message">
+                    <MessageInput
+                      className="chat-input"
+                      onSend={handleSubmit}
+                      placeholder={
+                        pendingImage
+                          ? "اكتب رسالة مع الصورة أو اضغط إرسال..."
+                          : "Type message here..."
+                      }
+                      attachButton={false}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </ChatContainer>
-        </MainContainer>
+            </ChatContainer>
+          </MainContainer>
+        </div>
       </div>
-    </div>
-  </>
-);
+    </>
+  );
 }

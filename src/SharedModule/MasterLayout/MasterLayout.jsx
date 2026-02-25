@@ -32,7 +32,9 @@ export default function MasterLayout() {
       <SideBar isOpen={isOpen} closeSidebar={closeSidebar} />
 
       <div className="d-flex flex-column w-100 h-100 overflow-hidden">
+        {/* NavBar - في الموبايل بتظهر الأيقونة الثابتة فقط */}
         <NavBar toggleSidebar={toggleSidebar} />
+
         <div className="flex-grow-1 overflow-auto">
           <Outlet />
         </div>
