@@ -205,12 +205,24 @@ svg:not(:host).svg-inline--fa:hover {
   transition: all 0.3s ease;
 }
 
-.my-sidebar-container .ps-sidebar-container .menu-item:hover {
+.my-sidebar-container .ps-sidebar-container .menu-item:hover,
+.my-sidebar-container .ps-sidebar-container .menu-item:hover * {
   background-color: #0dcaf0;
-  color: #131a2a;
+  color: #131a2a !important;
   border-radius: 10px;
 }
 
+
+.ps-menu-button:hover {
+ 
+  color: #131a2a !important;
+}
+
+.ps-menu-button:hover .ps-menu-label,
+.ps-menu-button:hover span,
+.ps-menu-button:hover i {
+  color: #131a2a !important;
+}
 /* ================= Logo */
 .my-sidebar-container .ps-sidebar-container img {
   cursor: pointer;
@@ -422,3 +434,5 @@ svg:not(:host).svg-inline--fa:hover {
   overflow-y: auto; /* Scroll جوه الرسائل */
   padding: 10px;
 }
+
+

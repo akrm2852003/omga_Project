@@ -17,9 +17,7 @@ export default function NavBar({ toggleSidebar }) {
     <>
       {/* ======== Desktop NavBar - يظهر فقط فوق 768px ======== */}
       <nav className="navbar-custom navbar-expand-lg d-none d-md-flex align-items-center mx-2 px-3">
-        <button className="btn text-light me-3" onClick={toggleSidebar}>
-          <i className="fa-solid fa-bars"></i>
-        </button>
+        
 
         <a className="navbar-brand fw-bold text-light me-auto" href="#">
           Chat omGa
