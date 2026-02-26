@@ -100,6 +100,7 @@ html, body {
 /* ✅ السماح بالـ pinch-to-zoom في كل عناصر chatscope وكل الصفحة */
 * {
     touch-action: pan-y pinch-zoom !important;
+    overscroll-behavior: none;
 }
 
 /* استثناء الـ input عشان يشتغل صح */
@@ -149,8 +150,8 @@ input, textarea, [contenteditable] {
     /* ===== Smooth Mobile Scroll Fix ===== */
     .cs-message-list {
         -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
-        scroll-behavior: smooth;
+        overscroll-behavior: none;
+        scroll-behavior: auto;
         will-change: scroll-position;
     }
 }
