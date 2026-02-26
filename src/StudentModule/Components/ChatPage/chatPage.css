@@ -63,10 +63,9 @@ html, body {
 .chat-messages {
     flex: 1 1 auto;
     overflow-y: auto;
-    overflow-x: hidden; /* ✅ منع الـ horizontal scroll على مستوى القائمة */
+    overflow-x: hidden;
     padding: 15px;
     min-height: 0;
-    /* ✅ السماح بالـ pinch-to-zoom داخل قائمة الرسائل */
     touch-action: pan-y pinch-zoom;
 }
 
@@ -146,6 +145,14 @@ input, textarea, [contenteditable] {
         border-radius: 0;
         margin: 0;
     }
+
+    /* ===== Smooth Mobile Scroll Fix ===== */
+    .cs-message-list {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        scroll-behavior: smooth;
+        will-change: scroll-position;
+    }
 }
 
 /* ====== Custom Message ====== */
@@ -154,7 +161,7 @@ input, textarea, [contenteditable] {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    overflow-x: visible; /* ✅ منع الـ scroll الداخلي في الرسالة */
+    overflow-x: visible;
 }
 
 /* ✅ الصور والـ SVG تتكيف مع حجم الرسالة بدون scroll */
