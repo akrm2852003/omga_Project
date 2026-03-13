@@ -63,7 +63,7 @@
 
 .chat-heading {
     font-weight: 800;
-    margin: 26px 0 14px;
+    margin: 10px 0 6px;
     color: var(--text-primary);
 }
 
@@ -85,7 +85,7 @@
 .chat-paragraph {
     font-size: 1.05rem;
     line-height: 1.95;
-    margin: 18px 0;
+    margin: -5px 0;
     color: white !important;
 }
 
@@ -105,7 +105,7 @@
 .chat-scientific {
     background: #f0f9ff;
     border-left: 4px solid var(--accent-scientific);
-    padding: 16px 18px;
+    padding: 10px 14px;
     border-radius: 14px;
     font-weight: 600;
     color: #0c4a6e;
@@ -117,7 +117,7 @@
 .chat-funny {
     background: #fef9c3;
     border-left: 4px solid #eab308;
-    padding: 14px 16px;
+    padding: 8px 12px;
     border-radius: 12px;
     font-style: italic;
     color: #713f12 !important;
@@ -129,23 +129,21 @@
 .chat-tip-paragraph {
     background: #fdf2f8;
     border-left: 4px solid var(--accent-tip);
-    padding: 16px 18px;
+    padding: 10px 14px;
     border-radius: 14px;
     font-weight: 600;
     color: #831843;
 }
 
 
-/* ================= Step Card — ✅ التعديل الوحيد ================= */
+/* ================= Step Card ================= */
 
 .card-step {
-    /* ✅ شيلنا بس: background, border, border-radius, padding الكبير */
     background: transparent;
     border: none;
     border-radius: 0;
     padding: 0;
-    /* ✅ قللنا المسافة بين الجمل بس */
-    margin: 4px 0;
+    margin: -10px 0;
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -156,8 +154,8 @@
 .chat-math-card {
     background: #fffbeb;
     border-left: 4px solid var(--accent-math);
-    padding: 16px 20px;
-    margin: 20px 0;
+    padding: 10px 16px;
+    margin: 8px 0;
     border-radius: 14px;
     font-family: "Fira Code", monospace;
     font-weight: 600;
@@ -215,7 +213,7 @@
     font-family: "Fira Code", monospace;
     font-size: 0.95rem;
     overflow-x: auto;
-    margin: 18px 0;
+    margin: 8px 0;
 }
 
 .chat-inline-code {
@@ -232,8 +230,8 @@
 .chat-math-block {
     background: #fffbeb;
     border-left: 4px solid var(--accent-math);
-    padding: 18px 20px;
-    margin: 20px 0;
+    padding: 12px 16px;
+    margin: 8px 0;
     border-radius: 14px;
     font-family: "Fira Code", monospace;
     font-weight: 600;
@@ -248,7 +246,7 @@
     display: block;
     width: 100%;
     box-sizing: border-box;
-    margin: 14px 0;
+    margin: 8px 0;
     padding: 16px;
     background: #ffffff;
     border-radius: 14px;
@@ -288,7 +286,7 @@
 .custom-message-content {
     direction: rtl;
     text-align: right;
-    line-height: 1.95;
+    line-height: 1.6;
     overflow-x: hidden;
     touch-action: pan-y pinch-zoom;
 }

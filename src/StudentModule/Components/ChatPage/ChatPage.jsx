@@ -149,6 +149,9 @@ export default function ChatPage() {
           },
         ]);
       }
+
+      console.log(response);
+      
     } catch (error) {
       console.log(error);
     } finally {
