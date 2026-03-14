@@ -3,7 +3,7 @@ import "./chatFormatter.css";
 const formatMessage = (text = "") => {
   let formatted = text.trim();
 
-  /* ================= حماية أي HTML Blocks ووضعها داخل frame ================= */
+  /* ================= حماية أي HTML Blocks ================= */
   const htmlPlaceholders = [];
   const HTML_TOKEN = (i) => `⟦HTML_${i}⟧`;
 
@@ -12,18 +12,14 @@ const formatMessage = (text = "") => {
     (match) => {
       const key = HTML_TOKEN(htmlPlaceholders.length);
 
-      // ✅ لو الـ match فيه SVG، نضمن إن فيه viewBox وإن الـ width/height مش hardcoded
       let processed = match;
 
       if (/<svg/i.test(match)) {
-        // نشيل أي width أو height ثابت من الـ SVG tag
         processed = processed.replace(/<svg([^>]*?)>/i, (svgTag, attrs) => {
-          // نشيل width وheight الثابتين
           let cleanedAttrs = attrs
             .replace(/\s+width\s*=\s*["'][^"']*["']/gi, "")
             .replace(/\s+height\s*=\s*["'][^"']*["']/gi, "");
 
-          // لو مفيش viewBox، نحاول نضيف واحد من الـ width/height الأصليين
           if (!/viewBox/i.test(cleanedAttrs)) {
             const wMatch = attrs.match(/width\s*=\s*["'](\d+)["']/i);
             const hMatch = attrs.match(/height\s*=\s*["'](\d+)["']/i);
@@ -36,7 +32,6 @@ const formatMessage = (text = "") => {
         });
       }
 
-      // نضع المحتوى في frame خاص
       const framed = `<div class="chat-html-frame">${processed}</div>`;
       htmlPlaceholders.push(framed);
       return key;
@@ -50,16 +45,29 @@ const formatMessage = (text = "") => {
   formatted = formatted.replace(/\$(.+?)\$/g, (_, expr) => {
     const key = MATH_TOKEN(mathPlaceholders.length);
 
+    // نظف العلامات الحسابية جوا المعادلة نفسها
     const cleaned = expr
+      .replace(/\\times/g, "×")
+      .replace(/\\cdot/g, "·")
+      .replace(/\\div/g, "÷")
+      .replace(/\\pm/g, "±")
       .replace(/\\xrightarrow\{\\text\{([^}]+)\}\}/g, "→ $1")
       .replace(/\\xrightarrow\{([^}]+)\}/g, "→ $1")
       .replace(/\\rightarrow/g, "→")
-      .replace(/\\left|\\right/g, "");
+      .replace(/\\left|\\right/g, "")
+      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1)/($2)")
+      .replace(/\{([^}]+)\}/g, "$1");
 
     mathPlaceholders.push(`<span class="chat-inline-math">${cleaned}</span>`);
 
     return key;
   });
+
+  /* علامات حسابية خارج الـ $ $ */
+  formatted = formatted.replace(/\\times/g, "×");
+  formatted = formatted.replace(/\\cdot/g, "·");
+  formatted = formatted.replace(/\\div/g, "÷");
+  formatted = formatted.replace(/\\pm/g, "±");
 
   /* ================= Headers ================= */
   formatted = formatted.replace(
@@ -79,6 +87,11 @@ const formatMessage = (text = "") => {
   formatted = formatted.replace(
     /\*\*\*(.+?)\*\*\*/g,
     "<strong><em>$1</em></strong>",
+  );
+  // سطر الإجابة — لو السطر كله bold وفيه كلمة إجابة/جواب يتحول لـ answer highlight
+  formatted = formatted.replace(
+    /^\*\*((?:الإجابة|الجواب|إجابة|الاجابة|الاجابه|الإجابه|Answer)[^*]*)\*\*$/gim,
+    '<p class="chat-answer-highlight">$1</p>',
   );
   formatted = formatted.replace(
     /\*\*(.+?)\*\*/g,
@@ -111,42 +124,66 @@ const formatMessage = (text = "") => {
     '<blockquote class="chat-tip-paragraph">$1</blockquote>',
   );
 
-  /* ================= Paragraph Wrapper ================= */
+  /* ================= Answer Highlight ==text== ================= */
   formatted = formatted.replace(
-    /(^|\n)(?!<h|<pre|<blockquote|<div|⟦MATH_)([^<\n].+?)(?=\n|$)/g,
-    (m, p1, line) => {
-      let cls = "chat-paragraph card-step";
-      let txt = line;
-
-      if (txt.startsWith("🔹")) {
-        cls += " chat-scientific";
-        txt = txt.replace(/^🔹\s*/, "");
-      } else if (txt.startsWith("🎭")) {
-        cls = "chat-paragraph chat-funny";
-        txt = txt.replace(/^🎭\s*/, "");
-      } else if (txt.startsWith("💡")) {
-        cls += " chat-tip-paragraph";
-        txt = txt.replace(/^💡\s*/, "");
-      } else if (txt.startsWith("⚛️")) {
-        cls += " chat-math-card";
-        txt = txt.replace(/^⚛️\s*/, "");
-      } else if (/→|Δ|heat|catalyst/i.test(txt)) {
-        cls = "chat-math-card";
-      }
-
-      return `${p1}<p class="${cls}">${txt}</p>`;
-    },
+    /==([^=]+)==/g,
+    '<span class="chat-answer-highlight">$1</span>',
   );
+
+  /* ================= Paragraph Wrapper ================= 
+     بنتجاهل السطور الفاضية تماماً — بس نلف السطور اللي فيها محتوى
+  */
+  const lines = formatted.split("\n");
+  const wrappedLines = lines.map((line) => {
+    const trimmed = line.trim();
+
+    // سطر فاضي — نرجعه فاضي من غير أي wrapper
+    if (!trimmed) return "";
+
+    // لو الـ line بيبدأ بـ HTML tag بالفعل — ملوش wrapper
+    if (
+      /^<(h[1-3]|p|pre|blockquote|div|ul|ol|li|table|thead|tbody|tr|td|th)[\s>]/i.test(trimmed) ||
+      trimmed.startsWith("⟦HTML_") ||
+      trimmed.startsWith("⟦MATH_")
+    ) {
+      return line;
+    }
+
+    // تحديد الـ class بناءً على المحتوى
+    let cls = "chat-paragraph card-step";
+    let txt = trimmed;
+
+    // سطر الإجابة — يبدأ بـ "الإجابة" أو "الجواب" أو "Answer"
+    if (/^(الإجابة|الجواب|إجابة|الاجابة|الاجابه|الإجابه|answer\s*:)/i.test(txt)) {
+      cls = "chat-paragraph chat-answer-highlight";
+    } else if (txt.startsWith("🔹")) {
+      cls = "chat-paragraph chat-scientific";
+      txt = txt.replace(/^🔹\s*/, "");
+    } else if (txt.startsWith("🎭")) {
+      cls = "chat-paragraph chat-funny";
+      txt = txt.replace(/^🎭\s*/, "");
+    } else if (txt.startsWith("💡")) {
+      cls = "chat-paragraph chat-tip-paragraph";
+      txt = txt.replace(/^💡\s*/, "");
+    } else if (txt.startsWith("⚛️")) {
+      cls = "chat-paragraph chat-math-card";
+      txt = txt.replace(/^⚛️\s*/, "");
+    } else if (/→|Δ|heat|catalyst/i.test(txt)) {
+      cls = "chat-paragraph chat-math-card";
+    }
+
+    return `<p class="${cls}">${txt}</p>`;
+  });
+
+  // ندمج السطور مع إزالة الـ empty strings المتتالية
+  formatted = wrappedLines
+    .join("")
+    .replace(/(<\/p>|<\/h[1-3]>|<\/pre>|<\/blockquote>)\s*(<p |<h)/g, "$1$2");
 
   /* ================= Highlight الشروط ================= */
   formatted = formatted.replace(
     /\((Δ|Heat|°C|Ni|Pt|MnO₂|catalyst|حرارة)\)/gi,
     '<span class="chat-inline-highlight-important">($1)</span>',
-  );
-
-  formatted = formatted.replace(
-    /\(([^()]+)\)/g,
-    '<span class="chat-inline-highlight">($1)</span>',
   );
 
   /* ================= Highlight Numbers ================= */
