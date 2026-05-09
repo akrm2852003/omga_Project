@@ -15,6 +15,8 @@ import { UserContext } from "../../../Context/AuthContext/AuthContext";
 import formatMessage from "./chatFormatter";
 import "./chatPage.css";
 
+const API_BASE = "https://aiservice.magacademy.co";
+
 export default function ChatPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -30,11 +32,12 @@ export default function ChatPage() {
   const [pendingImage, setPendingImage] = useState(null);
   const [inputText, setInputText] = useState("");
 
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const videoRef    = useRef(null);
+  const canvasRef   = useRef(null);
+  const fileInputRef= useRef(null);
+  const abortRef    = useRef(null); // لإلغاء الـ stream لو اليوزر سأل سؤال جديد
 
-  // ✅ Fix: لما اليوزر يعمل copy، ياخد plain text بس من غير فورمات أو ألوان
+  // ── copy plain text ──────────────────────────────────────────────
   useEffect(() => {
     const handleCopy = (e) => {
       const selection = window.getSelection();
@@ -48,45 +51,38 @@ export default function ChatPage() {
     return () => document.removeEventListener("copy", handleCopy);
   }, []);
 
-  // ✅ Paste image: لما اليوزر يعمل Ctrl+V بصورة، تتحط كـ pendingImage
+  // ── paste image ──────────────────────────────────────────────────
   useEffect(() => {
     const handlePaste = (e) => {
       const items = e.clipboardData?.items;
       if (!items) return;
-
       for (const item of items) {
         if (item.type.startsWith("image/")) {
           const file = item.getAsFile();
           if (!file) continue;
-
           const reader = new FileReader();
-          reader.onloadend = () => {
-            setPendingImage({ previewSrc: reader.result, file });
-          };
+          reader.onloadend = () => setPendingImage({ previewSrc: reader.result, file });
           reader.readAsDataURL(file);
-
-          e.preventDefault(); // منع أي سلوك تاني للـ paste
+          e.preventDefault();
           break;
         }
       }
     };
-
     document.addEventListener("paste", handlePaste);
     return () => document.removeEventListener("paste", handlePaste);
   }, []);
 
+  // ── load existing chat ───────────────────────────────────────────
   async function getChat(chatId) {
     try {
-      const response = await axios.get(
-        `https://aiservice.magacademy.co/v2/chat/${chatId}`,
-      );
+      const response = await axios.get(`${API_BASE}/v2/chat/${chatId}`);
       const formattedMessages = response.data.chat.map((msg) => ({
-        message: msg.text,
+        message:          msg.text,
         formattedMessage: msg.role !== "user" ? formatMessage(msg.text) : null,
-        sender: msg.role === "user" ? "You" : "AI",
-        direction: msg.role === "user" ? "outgoing" : "incoming",
-        sentTime: "just now",
-        isImage: false,
+        sender:           msg.role === "user" ? "You" : "AI",
+        direction:        msg.role === "user" ? "outgoing" : "incoming",
+        sentTime:         "just now",
+        isImage:          false,
       }));
       setMessages(formattedMessages);
       setCurrentChatId(chatId);
@@ -97,15 +93,14 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (id) getChat(id);
-    else {
-      setMessages([]);
-      setCurrentChatId(null);
-    }
+    else { setMessages([]); setCurrentChatId(null); }
   }, [id]);
 
   useEffect(() => {
     return () => {
       if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
+      // إلغاء أي stream شغال لو الكومبوننت اتشالت
+      if (abortRef.current) abortRef.current.abort();
     };
   }, [cameraStream]);
 
@@ -116,95 +111,182 @@ export default function ChatPage() {
     }
   }, [showCamera, cameraStream]);
 
-  async function sendMessage(text) {
+  // ══════════════════════════════════════════════════════════════════
+  // ✅ sendMessageStream — الوظيفة الأساسية الجديدة
+  // ══════════════════════════════════════════════════════════════════
+  async function sendMessageStream(text, imageFile = null) {
+    // إلغاء أي stream قديم
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    // ── تجهيز الـ question_id ──
+    const chatIdToUse = currentChatId;
+
+    // ── build FormData ──
+    const formData = new FormData();
+    formData.append("user_email", userEmail);
+    formData.append("question",   text || "");
+    if (chatIdToUse) formData.append("question_id", chatIdToUse);
+    if (imageFile)   formData.append("image", imageFile);
+
+    setIsTyping(true);
+
+    // ── أضف placeholder لرسالة الـ AI ──
+    // بنستخدم index ثابت عشان نعدل عليه live
+    const aiMsgIndex = messages.length; // الرسالة الجديدة ستكون في الـ index ده
+    setMessages((prev) => [
+      ...prev,
+      {
+        message:          "",
+        formattedMessage: "",
+        sender:           "AI",
+        direction:        "incoming",
+        sentTime:         "just now",
+        isImage:          false,
+        isStreaming:      true,
+      },
+    ]);
+
+    let accumulatedText = ""; // النص المتراكم من الـ chunks
+    let newChatId       = chatIdToUse;
+
     try {
-      setIsTyping(true);
-      const response = await axios.post(
-        "https://aiservice.magacademy.co/ask-by-question-id-v2",
-        {
-          user_email: userEmail,
-          question: text,
-          ...(currentChatId && { question_id: currentChatId }),
-        },
-      );
-      const returnedId = response.data?.question_id;
-      const aiReply = response.data?.response;
-      if (!currentChatId && returnedId) {
-        setCurrentChatId(returnedId);
-        setUserChatsId((prev) =>
-          prev.includes(returnedId) ? prev : [...prev, returnedId],
-        );
-        navigate(`/home/chat/${returnedId}`);
-      }
-      if (aiReply) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            message: aiReply,
-            formattedMessage: formatMessage(aiReply),
-            sender: "AI",
-            direction: "incoming",
-            sentTime: "just now",
-            isImage: false,
-          },
-        ]);
+      const response = await fetch(`${API_BASE}/ask-by-question-id-v2-stream`, {
+        method: "POST",
+        body:   formData,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
       }
 
-      console.log(response);
-      
-    } catch (error) {
-      console.log(error);
+      const reader  = response.body.getReader();
+      const decoder = new TextDecoder();
+      let lineBuffer = "";
+
+      // ── قراءة الـ stream ──
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        lineBuffer += decoder.decode(value, { stream: true });
+        const lines  = lineBuffer.split("\n");
+        lineBuffer   = lines.pop(); // الجزء الناقص
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const payload = line.slice(6).trim();
+
+          // ── نهاية الـ stream ──
+          if (payload === "[DONE]") {
+            setMessages((prev) =>
+              prev.map((msg, idx) =>
+                idx === prev.length - 1
+                  ? { ...msg, isStreaming: false }
+                  : msg
+              )
+            );
+            break;
+          }
+
+          let parsed;
+          try { parsed = JSON.parse(payload); } catch { continue; }
+
+          // ── error من السيرفر ──
+          if (parsed.error) {
+            setMessages((prev) =>
+              prev.map((msg, idx) =>
+                idx === prev.length - 1
+                  ? {
+                      ...msg,
+                      message:          parsed.error,
+                      formattedMessage: `<p style="color:red">${parsed.error}</p>`,
+                      isStreaming:      false,
+                    }
+                  : msg
+              )
+            );
+            setIsTyping(false);
+            return;
+          }
+
+          // ── chunk جديد ──
+          if (parsed.chunk) {
+            accumulatedText += parsed.chunk;
+
+            // حدّث الرسالة الأخيرة في الـ state
+            setMessages((prev) =>
+              prev.map((msg, idx) =>
+                idx === prev.length - 1
+                  ? {
+                      ...msg,
+                      message:          accumulatedText,
+                      formattedMessage: formatMessage(accumulatedText),
+                    }
+                  : msg
+              )
+            );
+          }
+
+          // ── question_id لو رجع من السيرفر ──
+          if (parsed.question_id && !newChatId) {
+            newChatId = parsed.question_id;
+            setCurrentChatId(newChatId);
+            setUserChatsId((prev) =>
+              prev.includes(newChatId) ? prev : [...prev, newChatId]
+            );
+            navigate(`/home/chat/${newChatId}`);
+          }
+        }
+      }
+
+    } catch (err) {
+      if (err.name === "AbortError") {
+        console.log("Stream aborted");
+        return;
+      }
+      console.error("Stream error:", err);
+      // حدّث الرسالة الأخيرة بـ error
+      setMessages((prev) =>
+        prev.map((msg, idx) =>
+          idx === prev.length - 1
+            ? {
+                ...msg,
+                message:          "❌ حدث خطأ في الاتصال، حاول تاني.",
+                formattedMessage: `<p style="color:red">❌ حدث خطأ في الاتصال، حاول تاني.</p>`,
+                isStreaming:      false,
+              }
+            : msg
+        )
+      );
     } finally {
       setIsTyping(false);
     }
   }
 
-  async function uploadImageToAPI(file) {
-    try {
-      setIsTyping(true);
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("user_email", userEmail);
-      if (currentChatId) formData.append("question_id", currentChatId);
-      const response = await axios.post(
-        "https://aiservice.magacademy.co/ask-by-question-id-v2",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
-      if (response.data?.response) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            message: response.data.response,
-            formattedMessage: formatMessage(response.data.response),
-            sender: "AI",
-            direction: "incoming",
-            sentTime: "just now",
-            isImage: false,
-          },
-        ]);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsTyping(false);
-    }
+  // ── upload image (stream) ────────────────────────────────────────
+  async function uploadImageStream(file, text = "") {
+    await sendMessageStream(text, file);
   }
 
+  // ── show user image in chat ──────────────────────────────────────
   function showImageInChat(previewSrc) {
     setMessages((prev) => [
       ...prev,
       {
-        message: "",
+        message:          "",
         formattedMessage: previewSrc,
-        sender: "You",
-        direction: "outgoing",
-        sentTime: "just now",
-        isImage: true,
+        sender:           "You",
+        direction:        "outgoing",
+        sentTime:         "just now",
+        isImage:          true,
       },
     ]);
   }
 
+  // ── handleSubmit ─────────────────────────────────────────────────
   function handleSubmit(text) {
     if (pendingImage) {
       showImageInChat(pendingImage.previewSrc);
@@ -212,36 +294,40 @@ export default function ChatPage() {
         setMessages((prev) => [
           ...prev,
           {
-            message: text,
+            message:          text,
             formattedMessage: null,
-            sender: "You",
-            direction: "outgoing",
-            sentTime: "just now",
-            isImage: false,
+            sender:           "You",
+            direction:        "outgoing",
+            sentTime:         "just now",
+            isImage:          false,
           },
         ]);
       }
-      uploadImageToAPI(pendingImage.file);
+      uploadImageStream(pendingImage.file, text || "");
       setPendingImage(null);
       setInputText("");
       return;
     }
+
     if (!text || !text.trim()) return;
+
     setMessages((prev) => [
       ...prev,
       {
-        message: text,
+        message:          text,
         formattedMessage: null,
-        sender: "You",
-        direction: "outgoing",
-        sentTime: "just now",
-        isImage: false,
+        sender:           "You",
+        direction:        "outgoing",
+        sentTime:         "just now",
+        isImage:          false,
       },
     ]);
-    sendMessage(text);
+
+    sendMessageStream(text);
     setInputText("");
   }
 
+  // ── handleImageOnlySend ──────────────────────────────────────────
   function handleImageOnlySend() {
     if (!pendingImage) return;
     showImageInChat(pendingImage.previewSrc);
@@ -249,36 +335,34 @@ export default function ChatPage() {
       setMessages((prev) => [
         ...prev,
         {
-          message: inputText,
+          message:          inputText,
           formattedMessage: null,
-          sender: "You",
-          direction: "outgoing",
-          sentTime: "just now",
-          isImage: false,
+          sender:           "You",
+          direction:        "outgoing",
+          sentTime:         "just now",
+          isImage:          false,
         },
       ]);
     }
-    uploadImageToAPI(pendingImage.file);
+    uploadImageStream(pendingImage.file, inputText || "");
     setPendingImage(null);
     setInputText("");
   }
 
+  // ── file input ───────────────────────────────────────────────────
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPendingImage({ previewSrc: reader.result, file });
-    };
+    reader.onloadend = () => setPendingImage({ previewSrc: reader.result, file });
     reader.readAsDataURL(file);
     e.target.value = "";
   };
 
+  // ── camera ───────────────────────────────────────────────────────
   const openCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
       setCameraStream(stream);
       setShowCamera(true);
     } catch (err) {
@@ -288,22 +372,16 @@ export default function ChatPage() {
   };
 
   const closeCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
-    }
+    if (cameraStream) { cameraStream.getTracks().forEach((t) => t.stop()); setCameraStream(null); }
     setShowCamera(false);
   };
 
   const capturePhoto = () => {
-    const video = videoRef.current;
+    const video  = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
-    if (video.readyState !== 4) {
-      alert("الكاميرا لسه مش جاهزة، استنى ثانية وحاول تاني");
-      return;
-    }
-    canvas.width = video.videoWidth;
+    if (video.readyState !== 4) { alert("الكاميرا لسه مش جاهزة، استنى ثانية وحاول تاني"); return; }
+    canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     const previewSrc = canvas.toDataURL("image/jpeg", 0.9);
@@ -311,35 +389,27 @@ export default function ChatPage() {
     canvas.toBlob(
       (blob) => {
         if (!blob) return;
-        const file = new File([blob], "camera-photo.jpg", {
-          type: "image/jpeg",
-        });
+        const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
         setPendingImage({ previewSrc, file });
       },
       "image/jpeg",
-      0.9,
+      0.9
     );
   };
 
+  // ════════════════════════════════════════════════════════════════
+  // Render
+  // ════════════════════════════════════════════════════════════════
   return (
     <>
       {showCamera && (
         <div className="camera-overlay">
           <div className="camera-modal">
-            <video
-              ref={videoRef}
-              className="camera-preview"
-              autoPlay
-              playsInline
-            />
+            <video ref={videoRef} className="camera-preview" autoPlay playsInline />
             <canvas ref={canvasRef} style={{ display: "none" }} />
             <div className="camera-controls">
-              <button className="btn-capture" onClick={capturePhoto}>
-                📸 التقط صورة
-              </button>
-              <button className="btn-close-camera" onClick={closeCamera}>
-                ✕ إغلاق
-              </button>
+              <button className="btn-capture"      onClick={capturePhoto}>📸 التقط صورة</button>
+              <button className="btn-close-camera" onClick={closeCamera}>✕ إغلاق</button>
             </div>
           </div>
         </div>
@@ -352,45 +422,47 @@ export default function ChatPage() {
               <MessageList
                 className="chat-messages"
                 typingIndicator={
-                  isTyping ? (
-                    <TypingIndicator content="AI is typing..." />
-                  ) : null
+                  isTyping ? <TypingIndicator content="AI is typing..." /> : null
                 }
               >
                 {messages.map((message, index) => {
-                  const isAI = message.sender.toLowerCase() !== "you";
-                  const isUserImage = !isAI && message.isImage;
+                  const isAI       = message.sender.toLowerCase() !== "you";
+                  const isUserImage= !isAI && message.isImage;
+
                   return (
                     <Message
                       key={index}
                       model={{
-                        message: isAI || isUserImage ? " " : message.message,
-                        sentTime: message.sentTime,
-                        sender: isAI ? "ai" : "user",
+                        message:   isAI || isUserImage ? " " : message.message,
+                        sentTime:  message.sentTime,
+                        sender:    isAI ? "ai" : "user",
                         direction: message.direction,
-                        type: "html",
+                        type:      "html",
                       }}
                     >
-                      {isAI && message.formattedMessage && (
+                      {/* ── رسالة AI (streaming أو كاملة) ── */}
+                      {isAI && (
                         <Message.CustomContent>
                           <div
                             className="custom-message-content w-100"
                             dangerouslySetInnerHTML={{
-                              __html: message.formattedMessage,
+                              __html: message.formattedMessage ||
+                                // لو لسه في بداية الـ stream وملقيناش حاجة — blinking cursor
+                                (message.isStreaming
+                                  ? "<span class='streaming-cursor'>▍</span>"
+                                  : ""),
                             }}
                           />
                         </Message.CustomContent>
                       )}
+
+                      {/* ── صورة المستخدم ── */}
                       {isUserImage && (
                         <Message.CustomContent>
                           <img
                             src={message.formattedMessage}
                             alt="uploaded"
-                            style={{
-                              maxWidth: "220px",
-                              borderRadius: "10px",
-                              display: "block",
-                            }}
+                            style={{ maxWidth: "220px", borderRadius: "10px", display: "block" }}
                           />
                         </Message.CustomContent>
                       )}
@@ -407,27 +479,13 @@ export default function ChatPage() {
                       className="pending-image-remove"
                       onClick={() => setPendingImage(null)}
                       title="إزالة الصورة"
-                    >
-                      ✕
-                    </button>
+                    >✕</button>
                   </div>
                 )}
 
                 <div className="input-bar__controls">
-                  <button
-                    className="chat-icon-btn"
-                    onClick={openCamera}
-                    title="التقط صورة"
-                  >
-                    📷
-                  </button>
-                  <button
-                    className="chat-icon-btn"
-                    onClick={() => fileInputRef.current?.click()}
-                    title="ارفع صورة أو ملف"
-                  >
-                    📎
-                  </button>
+                  <button className="chat-icon-btn" onClick={openCamera}                     title="التقط صورة">📷</button>
+                  <button className="chat-icon-btn" onClick={() => fileInputRef.current?.click()} title="ارفع صورة أو ملف">📎</button>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -457,9 +515,7 @@ export default function ChatPage() {
                       className="chat-icon-btn chat-send-btn"
                       onClick={handleImageOnlySend}
                       title="إرسال"
-                    >
-                      ➤
-                    </button>
+                    >➤</button>
                   )}
                 </div>
               </div>
