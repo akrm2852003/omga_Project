@@ -32,10 +32,16 @@ export default function ChatPage() {
   const [pendingImage, setPendingImage] = useState(null);
   const [inputText, setInputText] = useState("");
 
-  const videoRef    = useRef(null);
-  const canvasRef   = useRef(null);
-  const fileInputRef= useRef(null);
-  const abortRef    = useRef(null); // لإلغاء الـ stream لو اليوزر سأل سؤال جديد
+  const videoRef         = useRef(null);
+  const canvasRef        = useRef(null);
+  const fileInputRef     = useRef(null);
+  const abortRef         = useRef(null);
+  const currentChatIdRef = useRef(id || null); // ✅ ref يتتبع الـ currentChatId دايماً
+
+  // ── sync ref مع الـ state ────────────────────────────────────────
+  useEffect(() => {
+    currentChatIdRef.current = currentChatId;
+  }, [currentChatId]);
 
   // ── copy plain text ──────────────────────────────────────────────
   useEffect(() => {
@@ -82,10 +88,12 @@ export default function ChatPage() {
         sender:           msg.role === "user" ? "You" : "AI",
         direction:        msg.role === "user" ? "outgoing" : "incoming",
         sentTime:         "just now",
-        isImage:          false,
+        isImage:          !!msg.image,
+        imageUrl:         msg.image || null,
       }));
       setMessages(formattedMessages);
       setCurrentChatId(chatId);
+      currentChatIdRef.current = chatId;
     } catch (error) {
       console.log(error);
     }
@@ -93,13 +101,16 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (id) getChat(id);
-    else { setMessages([]); setCurrentChatId(null); }
+    else {
+      setMessages([]);
+      setCurrentChatId(null);
+      currentChatIdRef.current = null;
+    }
   }, [id]);
 
   useEffect(() => {
     return () => {
       if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
-      // إلغاء أي stream شغال لو الكومبوننت اتشالت
       if (abortRef.current) abortRef.current.abort();
     };
   }, [cameraStream]);
@@ -112,18 +123,16 @@ export default function ChatPage() {
   }, [showCamera, cameraStream]);
 
   // ══════════════════════════════════════════════════════════════════
-  // ✅ sendMessageStream — الوظيفة الأساسية الجديدة
+  // ✅ sendMessageStream
   // ══════════════════════════════════════════════════════════════════
   async function sendMessageStream(text, imageFile = null) {
-    // إلغاء أي stream قديم
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    // ── تجهيز الـ question_id ──
-    const chatIdToUse = currentChatId;
+    // ✅ نقرأ من الـ ref مش من الـ state عشان نضمن القيمة الحالية
+    const chatIdToUse = currentChatIdRef.current;
 
-    // ── build FormData ──
     const formData = new FormData();
     formData.append("user_email", userEmail);
     formData.append("question",   text || "");
@@ -132,9 +141,6 @@ export default function ChatPage() {
 
     setIsTyping(true);
 
-    // ── أضف placeholder لرسالة الـ AI ──
-    // بنستخدم index ثابت عشان نعدل عليه live
-    const aiMsgIndex = messages.length; // الرسالة الجديدة ستكون في الـ index ده
     setMessages((prev) => [
       ...prev,
       {
@@ -148,8 +154,7 @@ export default function ChatPage() {
       },
     ]);
 
-    let accumulatedText = ""; // النص المتراكم من الـ chunks
-    let newChatId       = chatIdToUse;
+    let accumulatedText = "";
 
     try {
       const response = await fetch(`${API_BASE}/ask-by-question-id-v2-stream`, {
@@ -158,34 +163,28 @@ export default function ChatPage() {
         signal: controller.signal,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
-      const reader  = response.body.getReader();
-      const decoder = new TextDecoder();
-      let lineBuffer = "";
+      const reader     = response.body.getReader();
+      const decoder    = new TextDecoder();
+      let   lineBuffer = "";
 
-      // ── قراءة الـ stream ──
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         lineBuffer += decoder.decode(value, { stream: true });
-        const lines  = lineBuffer.split("\n");
-        lineBuffer   = lines.pop(); // الجزء الناقص
+        const lines = lineBuffer.split("\n");
+        lineBuffer  = lines.pop();
 
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const payload = line.slice(6).trim();
 
-          // ── نهاية الـ stream ──
           if (payload === "[DONE]") {
             setMessages((prev) =>
               prev.map((msg, idx) =>
-                idx === prev.length - 1
-                  ? { ...msg, isStreaming: false }
-                  : msg
+                idx === prev.length - 1 ? { ...msg, isStreaming: false } : msg
               )
             );
             break;
@@ -212,11 +211,20 @@ export default function ChatPage() {
             return;
           }
 
+          // ── question_id من السيرفر ──
+          if (parsed.question_id && !currentChatIdRef.current) {
+            const newChatId = parsed.question_id;
+            currentChatIdRef.current = newChatId;
+            setCurrentChatId(newChatId);
+            setUserChatsId((prev) =>
+              prev.includes(newChatId) ? prev : [...prev, newChatId]
+            );
+            navigate(`/home/chat/${newChatId}`);
+          }
+
           // ── chunk جديد ──
           if (parsed.chunk) {
             accumulatedText += parsed.chunk;
-
-            // حدّث الرسالة الأخيرة في الـ state
             setMessages((prev) =>
               prev.map((msg, idx) =>
                 idx === prev.length - 1
@@ -229,26 +237,11 @@ export default function ChatPage() {
               )
             );
           }
-
-          // ── question_id لو رجع من السيرفر ──
-          if (parsed.question_id && !newChatId) {
-            newChatId = parsed.question_id;
-            setCurrentChatId(newChatId);
-            setUserChatsId((prev) =>
-              prev.includes(newChatId) ? prev : [...prev, newChatId]
-            );
-            navigate(`/home/chat/${newChatId}`);
-          }
         }
       }
-
     } catch (err) {
-      if (err.name === "AbortError") {
-        console.log("Stream aborted");
-        return;
-      }
+      if (err.name === "AbortError") { console.log("Stream aborted"); return; }
       console.error("Stream error:", err);
-      // حدّث الرسالة الأخيرة بـ error
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === prev.length - 1
@@ -426,8 +419,8 @@ export default function ChatPage() {
                 }
               >
                 {messages.map((message, index) => {
-                  const isAI       = message.sender.toLowerCase() !== "you";
-                  const isUserImage= !isAI && message.isImage;
+                  const isAI        = message.sender.toLowerCase() !== "you";
+                  const isUserImage = !isAI && message.isImage;
 
                   return (
                     <Message
@@ -440,14 +433,14 @@ export default function ChatPage() {
                         type:      "html",
                       }}
                     >
-                      {/* ── رسالة AI (streaming أو كاملة) ── */}
+                      {/* ── رسالة AI ── */}
                       {isAI && (
                         <Message.CustomContent>
                           <div
                             className="custom-message-content w-100"
                             dangerouslySetInnerHTML={{
-                              __html: message.formattedMessage ||
-                                // لو لسه في بداية الـ stream وملقيناش حاجة — blinking cursor
+                              __html:
+                                message.formattedMessage ||
                                 (message.isStreaming
                                   ? "<span class='streaming-cursor'>▍</span>"
                                   : ""),
@@ -484,7 +477,7 @@ export default function ChatPage() {
                 )}
 
                 <div className="input-bar__controls">
-                  <button className="chat-icon-btn" onClick={openCamera}                     title="التقط صورة">📷</button>
+                  <button className="chat-icon-btn" onClick={openCamera} title="التقط صورة">📷</button>
                   <button className="chat-icon-btn" onClick={() => fileInputRef.current?.click()} title="ارفع صورة أو ملف">📎</button>
                   <input
                     ref={fileInputRef}
