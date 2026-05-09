@@ -212,7 +212,7 @@ export default function ChatPage() {
           }
 
           // ── question_id من السيرفر ──
-          if (parsed.question_id && !currentChatIdRef.current) {
+          if (parsed.question_id && currentChatIdRef.current !== parsed.question_id) {
             const newChatId = parsed.question_id;
             currentChatIdRef.current = newChatId;
             setCurrentChatId(newChatId);
