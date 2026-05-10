@@ -37,6 +37,7 @@ export default function ChatPage() {
   const fileInputRef     = useRef(null);
   const abortRef         = useRef(null);
   const currentChatIdRef = useRef(id || null); // ✅ ref يتتبع الـ currentChatId دايماً
+  const isStreamingRef   = useRef(false); // ✨ التعديل: ref لمنع الـ useEffect من مسح الشات أثناء الـ Stream
 
   // ── sync ref مع الـ state ────────────────────────────────────────
   useEffect(() => {
@@ -100,9 +101,11 @@ export default function ChatPage() {
     }
   }
 
+  // ✨ التعديل: التأكد إن الـ stream مش شغال قبل ما نجيب الداتا عشان الرسالة متتمسحش
   useEffect(() => {
-    if (id) getChat(id);
-    else {
+    if (id && !isStreamingRef.current) {
+      getChat(id);
+    } else if (!id) {
       setMessages([]);
       setCurrentChatId(null);
       currentChatIdRef.current = null;
@@ -130,6 +133,8 @@ export default function ChatPage() {
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+
+    isStreamingRef.current = true; // ✨ التعديل: إعلام المكون إن في Stream شغال حالاً
 
     // ✅ نقرأ من الـ ref مش من الـ state عشان نضمن القيمة الحالية
     const chatIdToUse = currentChatIdRef.current;
@@ -215,7 +220,7 @@ export default function ChatPage() {
             return;
           }
 
-          // ✨ التعديل: نستقبل notebook_id (أو question_id كاحتياطي) عشان نحدث الـ URL لو دي محادثة جديدة
+          // ✨ التعديل: نستقبل notebook_id عشان نحدث الـ URL لو دي محادثة جديدة باستخدام replace
           const returnedChatId = parsed.notebook_id || parsed.question_id;
           if (returnedChatId && currentChatIdRef.current !== returnedChatId) {
             const newChatId = returnedChatId;
@@ -224,7 +229,7 @@ export default function ChatPage() {
             setUserChatsId((prev) =>
               prev.includes(newChatId) ? prev : [...prev, newChatId]
             );
-            navigate(`/home/chat/${newChatId}`);
+            navigate(`/home/chat/${newChatId}`, { replace: true }); // ✨ ضفنا replace عشان ميبوظش الـ Back
           }
 
           // ── chunk جديد ──
@@ -261,6 +266,7 @@ export default function ChatPage() {
       );
     } finally {
       setIsTyping(false);
+      isStreamingRef.current = false; // ✨ التعديل: خلصنا Stream نرجعها false
     }
   }
 
