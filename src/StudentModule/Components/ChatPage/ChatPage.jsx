@@ -81,6 +81,7 @@ export default function ChatPage() {
   // ── load existing chat ───────────────────────────────────────────
   async function getChat(chatId) {
     try {
+      // 🔹 الـ endpoint ده اتعدل في الباك إند عشان يقبل notebook_id
       const response = await axios.get(`${API_BASE}/v2/chat/${chatId}`);
       const formattedMessages = response.data.chat.map((msg) => ({
         message:          msg.text,
@@ -136,7 +137,10 @@ export default function ChatPage() {
     const formData = new FormData();
     formData.append("user_email", userEmail);
     formData.append("question",   text || "");
-    if (chatIdToUse) formData.append("question_id", chatIdToUse);
+    
+    // ✨ التعديل الأهم: نبعت الـ ID باسم notebook_id عشان الباك إند يضيف الرسالة لنفس الجلسة
+    if (chatIdToUse) formData.append("notebook_id", chatIdToUse); 
+    
     if (imageFile)   formData.append("image", imageFile);
 
     setIsTyping(true);
@@ -211,9 +215,10 @@ export default function ChatPage() {
             return;
           }
 
-          // ── question_id من السيرفر ──
-          if (parsed.question_id && currentChatIdRef.current !== parsed.question_id) {
-            const newChatId = parsed.question_id;
+          // ✨ التعديل: نستقبل notebook_id (أو question_id كاحتياطي) عشان نحدث الـ URL لو دي محادثة جديدة
+          const returnedChatId = parsed.notebook_id || parsed.question_id;
+          if (returnedChatId && currentChatIdRef.current !== returnedChatId) {
+            const newChatId = returnedChatId;
             currentChatIdRef.current = newChatId;
             setCurrentChatId(newChatId);
             setUserChatsId((prev) =>
