@@ -171,11 +171,14 @@
 /* ================= HTML Frame (رسم توضيحي / صورة) ================= */
 
 .chat-html-frame {
+  /* إطار مضبوط الحجم للرسم/الصورة — بدل ما ياخد عرض الفقاعة كله ويبان
+     زي بلوك HTML خام، بقى بطاقة صغيرة متناسبة (thumbnail) وواضح إنها صورة. */
   display: block;
   width: 100%;
+  max-width: 320px;
   box-sizing: border-box;
-  margin: 4px 0;
-  padding: 12px;
+  margin: 6px 0;
+  padding: 8px;
   background: #ffffff;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
