@@ -1,106 +1,100 @@
 import axios from "axios";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../../../assets/logo.png";
+import { FiUser, FiMail, FiAlertCircle } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import AuthCard from "../../../SharedModule/AuthCard/AuthCard";
 
 export default function Register() {
-  let {
+  const {
     register,
-    formState: { errors },
     handleSubmit,
+    formState: { errors },
   } = useForm();
 
-  let navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const navigate = useNavigate();
 
   async function onSubmit(data) {
-    console.log(data);
-
+    setFormError("");
+    setLoading(true);
     try {
-      let response = await axios.post(
-        "https://aiservice.magacademy.co/v2/signup",
-        data,
-      );
+      await axios.post("https://aiservice.magacademy.co/v2/signup", data);
+      toast.success("تم إنشاء الحساب بنجاح! سجّل دخولك دلوقتي.");
       navigate("/login");
     } catch (error) {
       console.log(error);
+      setFormError("حصلت مشكلة في إنشاء الحساب، حاول تاني.");
+    } finally {
+      setLoading(false);
     }
   }
+
   return (
-    <>
-      <div className="auth-container ">
-        <div className="container-fluid bg-overlay ">
-          <div className="row vh-100 justify-content-center align-items-center">
-            <div className=" col-sm-12 col-md-8 col-lg-7 col-xl-5  p-4 rounded-2 form-bg">
-              <div className="form-container  ">
-                <div className="logo-container banner text-center">
-                  <img className="w-25" src={logo} alt="" />
-                </div>
-
-                <form className="mt-4" onSubmit={handleSubmit(onSubmit)}>
-                  <div className="input-group mb-3">
-                    <span className="input-group-text" id="basic-addon1">
-                      <i class="fa-solid fa-circle-user fa-beat-fade"></i>
-                    </span>
-                    <input
-                      {...register("user_name", {
-                        required: "userName is required",
-                      })}
-                      type="userName"
-                      className="form-control"
-                      placeholder="Enter User Name"
-                      aria-label="userName"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-                  {errors.userName && (
-                    <div className="alert alert-danger p-2">
-                      {errors.userName.message}
-                    </div>
-                  )}
-
-                  <div className="input-group mb-3">
-                    <span className="input-group-text" id="basic-addon1">
-                      <i class="fa-solid fa-envelope fa-beat-fade"></i>
-                    </span>
-                    <input
-                      {...register("user_email", {
-                        required: "email is required",
-                        pattern: {
-                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: "should be valid mail",
-                        },
-                      })}
-                      type="email"
-                      className="form-control"
-                      placeholder="Enter your E-mail"
-                      aria-label="email"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-                  {errors.email && (
-                    <div className="alert alert-danger p-2 ">
-                      {errors.email.message}
-                    </div>
-                  )}
-
-                  <div className="links d-flex justify-content-end">
-                    <Link
-                      className=" text-decoration-none link-style"
-                      to={"/login"}
-                    >
-                      Login Now
-                    </Link>
-                  </div>
-                  <button className=" w-100 m-auto d-block mt-3 login-btn-style ">
-                    Register
-                  </button>
-                </form>
-              </div>
-            </div>
+    <AuthCard
+      title="ابدأ مذاكرتك دلوقتي"
+      subtitle="اعمل حساب جديد في أقل من دقيقة"
+      footer={
+        <>
+          عندك حساب بالفعل؟ <Link to="/login">سجّل دخولك</Link>
+        </>
+      }
+    >
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        {formError && (
+          <div className="form-alert error">
+            <FiAlertCircle size={16} />
+            {formError}
           </div>
+        )}
+
+        <div className="field">
+          <label htmlFor="user_name">الاسم</label>
+          <div className="field-input-wrap">
+            <FiUser size={16} />
+            <input
+              id="user_name"
+              type="text"
+              placeholder="اسمك الكامل"
+              {...register("user_name", { required: "الاسم مطلوب" })}
+            />
+          </div>
+          {errors.user_name && <div className="field-error">{errors.user_name.message}</div>}
         </div>
-      </div>
-    </>
+
+        <div className="field">
+          <label htmlFor="user_email">البريد الإلكتروني</label>
+          <div className="field-input-wrap">
+            <FiMail size={16} />
+            <input
+              id="user_email"
+              type="email"
+              placeholder="example@mail.com"
+              {...register("user_email", {
+                required: "البريد الإلكتروني مطلوب",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "لازم يكون بريد إلكتروني صحيح",
+                },
+              })}
+            />
+          </div>
+          {errors.user_email && <div className="field-error">{errors.user_email.message}</div>}
+        </div>
+
+        <motion.button
+          type="submit"
+          className="btn btn-primary btn-submit"
+          disabled={loading}
+          whileTap={{ scale: 0.98 }}
+        >
+          {loading ? <span className="btn-spinner" /> : "إنشاء الحساب"}
+        </motion.button>
+      </form>
+    </AuthCard>
   );
 }

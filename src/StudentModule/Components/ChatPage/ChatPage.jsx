@@ -1,21 +1,23 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import {
-  MainContainer,
-  ChatContainer,
-  MessageList,
-  Message,
-  MessageInput,
-  TypingIndicator,
-} from "@chatscope/chat-ui-kit-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiCamera, FiPaperclip, FiSend, FiX } from "react-icons/fi";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
 import { UserContext } from "../../../Context/AuthContext/AuthContext";
 import formatMessage from "./chatFormatter";
+import "./chatFormatter.css";
 import "./chatPage.css";
 
 const API_BASE = "https://aiservice.magacademy.co";
+
+const SUBJECT_SUGGESTIONS = [
+  { label: "كيمياء", emoji: "🧪", prompt: "ممكن تشرحلي درس التآصل في الكيمياء؟" },
+  { label: "فيزياء", emoji: "⚛️", prompt: "عايز أفهم قانون نيوتن التاني بشكل مبسط" },
+  { label: "أحياء وجيولوجيا", emoji: "🧬", prompt: "اشرحلي الانقسام الميتوزي خطوة بخطوة" },
+  { label: "عربي", emoji: "📖", prompt: "وضحلي الفرق بين المفعول المطلق والمفعول لأجله" },
+  { label: "إنجليزي", emoji: "🔤", prompt: "Explain the difference between present perfect and past simple" },
+];
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -35,14 +37,33 @@ export default function ChatPage() {
   const videoRef         = useRef(null);
   const canvasRef        = useRef(null);
   const fileInputRef     = useRef(null);
+  const textareaRef      = useRef(null);
+  const scrollRef        = useRef(null);
   const abortRef         = useRef(null);
-  const currentChatIdRef = useRef(id || null); // ✅ ref يتتبع الـ currentChatId دايماً
-  const isStreamingRef   = useRef(false); // ✨ التعديل: ref لمنع الـ useEffect من مسح الشات أثناء الـ Stream
+  const currentChatIdRef   = useRef(id || null); // ✅ ref يتتبع الـ currentChatId دايماً
+  const isStreamingRef     = useRef(false); // ref لمنع الـ useEffect من مسح الشات أثناء الـ Stream
+  const streamingChatIdRef = useRef(null); // هو الشات رقم كام اللي بيعمله Stream دلوقتي (مش أي شات)
+  const activeChatFetchRef = useRef(null); // آخر chatId اتطلب من getChat — بيمنع رد قديم متأخر إنه يكتب فوق شات جديد
 
   // ── sync ref مع الـ state ────────────────────────────────────────
   useEffect(() => {
     currentChatIdRef.current = currentChatId;
   }, [currentChatId]);
+
+  // ── auto-scroll لآخر رسالة ──────────────────────────────────────
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  // ── auto-resize للـ textarea ─────────────────────────────────────
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  }, [inputText]);
 
   // ── copy plain text ──────────────────────────────────────────────
   useEffect(() => {
@@ -81,9 +102,16 @@ export default function ChatPage() {
 
   // ── load existing chat ───────────────────────────────────────────
   async function getChat(chatId) {
+    // 🐛 فيكس "بيجيب شات قديم": لو المستخدم دوس على شات تاني قبل ما الطلب ده
+    // يخلص، الـ request بتاع الشات القديم لسه ممكن يرجع بعد الجديد (race
+    // condition عادي في الشبكة). بنسجل مين آخر شات اتطلب، ولما الرد يوصل
+    // بنتأكد إنه لسه هو المطلوب قبل ما نكتب فوق الرسايل.
+    activeChatFetchRef.current = chatId;
     try {
-      // 🔹 الـ endpoint ده اتعدل في الباك إند عشان يقبل notebook_id
       const response = await axios.get(`${API_BASE}/v2/chat/${chatId}`);
+
+      if (activeChatFetchRef.current !== chatId) return; // فيه شات أحدث اتطلب في الوقت ده، تجاهل الرد ده
+
       const formattedMessages = response.data.chat.map((msg) => ({
         message:          msg.text,
         formattedMessage: msg.role !== "user" ? formatMessage(msg.text) : null,
@@ -101,11 +129,25 @@ export default function ChatPage() {
     }
   }
 
-  // ✨ التعديل: التأكد إن الـ stream مش شغال قبل ما نجيب الداتا عشان الرسالة متتمسحش
   useEffect(() => {
-    if (id && !isStreamingRef.current) {
+    if (id) {
+      // لو ده نفس الشات اللي بيتعمله Stream دلوقتي (مثلاً أول رسالة في شات
+      // جديد بيتحدث الـ URL له)، متعملش fetch عشان الرد الجاي بالـ Stream
+      // متتمسحش برد قديم من السيرفر.
+      if (isStreamingRef.current && streamingChatIdRef.current === id) return;
+
+      // 🐛 فيكس "بيجيب شات قديم": لو المستخدم فتح شات تاني (من الـ Sidebar
+      // مثلاً) وسط ما شات مختلف لسه بيعمل Stream، كان الشرط القديم بيمنع
+      // تحميل الشات الجديد خالص فيفضل يعرض رسايل الشات القديم تحت URL
+      // الشات الجديد. هنا بنلغي الـ Stream القديم ونحمّل الشات المطلوب فعلاً.
+      if (isStreamingRef.current) {
+        if (abortRef.current) abortRef.current.abort();
+        isStreamingRef.current = false;
+        setIsTyping(false);
+      }
+
       getChat(id);
-    } else if (!id) {
+    } else {
       setMessages([]);
       setCurrentChatId(null);
       currentChatIdRef.current = null;
@@ -134,18 +176,18 @@ export default function ChatPage() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    isStreamingRef.current = true; // ✨ التعديل: إعلام المكون إن في Stream شغال حالاً
+    isStreamingRef.current = true; // إعلام المكون إن في Stream شغال حالاً
 
     // ✅ نقرأ من الـ ref مش من الـ state عشان نضمن القيمة الحالية
     const chatIdToUse = currentChatIdRef.current;
+    streamingChatIdRef.current = chatIdToUse; // مين الشات اللي الـ Stream ده بتاعه بالظبط
 
     const formData = new FormData();
     formData.append("user_email", userEmail);
     formData.append("question",   text || "");
-    
-    // ✨ التعديل الأهم: نبعت الـ ID باسم notebook_id عشان الباك إند يضيف الرسالة لنفس الجلسة
-    if (chatIdToUse) formData.append("notebook_id", chatIdToUse); 
-    
+
+    if (chatIdToUse) formData.append("notebook_id", chatIdToUse);
+
     if (imageFile)   formData.append("image", imageFile);
 
     setIsTyping(true);
@@ -210,7 +252,7 @@ export default function ChatPage() {
                   ? {
                       ...msg,
                       message:          parsed.error,
-                      formattedMessage: `<p style="color:red">${parsed.error}</p>`,
+                      formattedMessage: `<p style="color:var(--danger)">${parsed.error}</p>`,
                       isStreaming:      false,
                     }
                   : msg
@@ -220,11 +262,12 @@ export default function ChatPage() {
             return;
           }
 
-          // ✨ التعديل: نستقبل notebook_id عشان نحدث الـ URL لو دي محادثة جديدة باستخدام replace
+          // ✨ نستقبل notebook_id عشان نحدث الـ URL لو دي محادثة جديدة باستخدام replace
           const returnedChatId = parsed.notebook_id || parsed.question_id;
           if (returnedChatId && currentChatIdRef.current !== returnedChatId) {
             const newChatId = returnedChatId;
             currentChatIdRef.current = newChatId;
+            streamingChatIdRef.current = newChatId; // الشات الجديد ده هو اللي بيتعمله Stream دلوقتي
             setCurrentChatId(newChatId);
             setUserChatsId((prev) =>
               prev.includes(newChatId) ? prev : [...prev, newChatId]
@@ -258,7 +301,7 @@ export default function ChatPage() {
             ? {
                 ...msg,
                 message:          "❌ حدث خطأ في الاتصال، حاول تاني.",
-                formattedMessage: `<p style="color:red">❌ حدث خطأ في الاتصال، حاول تاني.</p>`,
+                formattedMessage: `<p style="color:var(--danger)">❌ حدث خطأ في الاتصال، حاول تاني.</p>`,
                 isStreaming:      false,
               }
             : msg
@@ -266,7 +309,10 @@ export default function ChatPage() {
       );
     } finally {
       setIsTyping(false);
-      isStreamingRef.current = false; // ✨ التعديل: خلصنا Stream نرجعها false
+      isStreamingRef.current = false; // خلصنا Stream نرجعها false
+      if (streamingChatIdRef.current === chatIdToUse || streamingChatIdRef.current === currentChatIdRef.current) {
+        streamingChatIdRef.current = null;
+      }
     }
   }
 
@@ -290,8 +336,10 @@ export default function ChatPage() {
     ]);
   }
 
-  // ── handleSubmit ─────────────────────────────────────────────────
-  function handleSubmit(text) {
+  // ── handleSend (نص و/أو صورة) ─────────────────────────────────────
+  function handleSend() {
+    const text = inputText;
+
     if (pendingImage) {
       showImageInChat(pendingImage.previewSrc);
       if (text && text.trim()) {
@@ -328,28 +376,6 @@ export default function ChatPage() {
     ]);
 
     sendMessageStream(text);
-    setInputText("");
-  }
-
-  // ── handleImageOnlySend ──────────────────────────────────────────
-  function handleImageOnlySend() {
-    if (!pendingImage) return;
-    showImageInChat(pendingImage.previewSrc);
-    if (inputText && inputText.trim()) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          message:          inputText,
-          formattedMessage: null,
-          sender:           "You",
-          direction:        "outgoing",
-          sentTime:         "just now",
-          isImage:          false,
-        },
-      ]);
-    }
-    uploadImageStream(pendingImage.file, inputText || "");
-    setPendingImage(null);
     setInputText("");
   }
 
@@ -406,125 +432,156 @@ export default function ChatPage() {
   // ════════════════════════════════════════════════════════════════
   return (
     <>
-      {showCamera && (
-        <div className="camera-overlay">
-          <div className="camera-modal">
-            <video ref={videoRef} className="camera-preview" autoPlay playsInline />
-            <canvas ref={canvasRef} style={{ display: "none" }} />
-            <div className="camera-controls">
-              <button className="btn-capture"      onClick={capturePhoto}>📸 التقط صورة</button>
-              <button className="btn-close-camera" onClick={closeCamera}>✕ إغلاق</button>
+      <AnimatePresence>
+        {showCamera && (
+          <motion.div
+            className="camera-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="camera-modal"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+            >
+              <video ref={videoRef} className="camera-preview" autoPlay playsInline />
+              <canvas ref={canvasRef} style={{ display: "none" }} />
+              <div className="camera-controls">
+                <button className="btn-capture" onClick={capturePhoto}>📸 التقط صورة</button>
+                <button className="btn-close-camera" onClick={closeCamera}>✕ إغلاق</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="chat-page">
+        {messages.length === 0 ? (
+          <div className="chat-empty-state">
+            <h2>إزاي أقدر أساعدك النهاردة؟</h2>
+            <p>اكتب سؤالك أو صوّر واجبك، وهرد عليك فوراً</p>
+            <div className="subject-chips">
+              {SUBJECT_SUGGESTIONS.map((s) => (
+                <button
+                  key={s.label}
+                  className="subject-chip"
+                  onClick={() => { setInputText(s.prompt); textareaRef.current?.focus(); }}
+                >
+                  <span>{s.emoji}</span> {s.label}
+                </button>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="chat-scroll-area" ref={scrollRef}>
+            {messages.map((message, index) => {
+              const isAI        = message.sender.toLowerCase() !== "you";
+              const isUserImage = !isAI && message.isImage;
 
-      <div className="chat-layout w-100 h-100">
-        <div className="chat-center w-100 h-100">
-          <MainContainer className="chat-main w-100 h-100">
-            <ChatContainer className="p-0 w-100">
-              <MessageList
-                className="chat-messages"
-                typingIndicator={
-                  isTyping ? <TypingIndicator content="AI is typing..." /> : null
-                }
-              >
-                {messages.map((message, index) => {
-                  const isAI        = message.sender.toLowerCase() !== "you";
-                  const isUserImage = !isAI && message.isImage;
-
-                  return (
-                    <Message
-                      key={index}
-                      model={{
-                        message:   isAI || isUserImage ? " " : message.message,
-                        sentTime:  message.sentTime,
-                        sender:    isAI ? "ai" : "user",
-                        direction: message.direction,
-                        type:      "html",
-                      }}
-                    >
-                      {/* ── رسالة AI ── */}
-                      {isAI && (
-                        <Message.CustomContent>
-                          <div
-                            className="custom-message-content w-100"
-                            dangerouslySetInnerHTML={{
-                              __html:
-                                message.formattedMessage ||
-                                (message.isStreaming
-                                  ? "<span class='streaming-cursor'>▍</span>"
-                                  : ""),
-                            }}
-                          />
-                        </Message.CustomContent>
-                      )}
-
-                      {/* ── صورة المستخدم ── */}
-                      {isUserImage && (
-                        <Message.CustomContent>
-                          <img
-                            src={message.formattedMessage}
-                            alt="uploaded"
-                            style={{ maxWidth: "220px", borderRadius: "10px", display: "block" }}
-                          />
-                        </Message.CustomContent>
-                      )}
-                    </Message>
-                  );
-                })}
-              </MessageList>
-
-              <div as="MessageInput" className="input-bar">
-                {pendingImage && (
-                  <div className="pending-image-preview">
-                    <img src={pendingImage.previewSrc} alt="preview" />
-                    <button
-                      className="pending-image-remove"
-                      onClick={() => setPendingImage(null)}
-                      title="إزالة الصورة"
-                    >✕</button>
+              return (
+                <motion.div
+                  key={index}
+                  className={`msg-row ${isAI ? "incoming" : "outgoing"}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  {isAI && <div className="msg-avatar">أ</div>}
+                  <div className="msg-bubble">
+                    {isAI ? (
+                      <div
+                        className="custom-message-content"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            message.formattedMessage ||
+                            (message.isStreaming ? "<span class='streaming-cursor'></span>" : ""),
+                        }}
+                      />
+                    ) : isUserImage ? (
+                      <img src={message.formattedMessage} alt="مرفوع" />
+                    ) : (
+                      message.message
+                    )}
                   </div>
-                )}
+                </motion.div>
+              );
+            })}
 
-                <div className="input-bar__controls">
-                  <button className="chat-icon-btn" onClick={openCamera} title="التقط صورة">📷</button>
-                  <button className="chat-icon-btn" onClick={() => fileInputRef.current?.click()} title="ارفع صورة أو ملف">📎</button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,application/pdf,.doc,.docx"
-                    style={{ display: "none" }}
-                    onChange={handleFileInputChange}
-                  />
-
-                  <div className="input-bar__message">
-                    <MessageInput
-                      className="chat-input"
-                      onSend={handleSubmit}
-                      onChange={(val) => setInputText(val)}
-                      value={inputText}
-                      placeholder={
-                        pendingImage
-                          ? "اكتب رسالة مع الصورة أو اضغط إرسال..."
-                          : "Type message here..."
-                      }
-                      attachButton={false}
-                      sendButton={!pendingImage}
-                    />
-                  </div>
-
-                  {pendingImage && (
-                    <button
-                      className="chat-icon-btn chat-send-btn"
-                      onClick={handleImageOnlySend}
-                      title="إرسال"
-                    >➤</button>
-                  )}
+            {isTyping && (
+              <div className="msg-row incoming">
+                <div className="msg-avatar">أ</div>
+                <div className="msg-bubble">
+                  <div className="typing-dots"><span /><span /><span /></div>
                 </div>
               </div>
-            </ChatContainer>
-          </MainContainer>
+            )}
+          </div>
+        )}
+
+        <div className="composer-wrap">
+          <AnimatePresence>
+            {pendingImage && (
+              <motion.div
+                className="pending-image-preview"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+              >
+                <img src={pendingImage.previewSrc} alt="معاينة" />
+                <button
+                  className="pending-image-remove"
+                  onClick={() => setPendingImage(null)}
+                  title="إزالة الصورة"
+                >
+                  <FiX size={12} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="composer-bar">
+            <button className="composer-icon-btn" onClick={openCamera} title="التقط صورة">
+              <FiCamera size={19} />
+            </button>
+            <button className="composer-icon-btn" onClick={() => fileInputRef.current?.click()} title="ارفع صورة أو ملف">
+              <FiPaperclip size={19} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,application/pdf,.doc,.docx"
+              style={{ display: "none" }}
+              onChange={handleFileInputChange}
+            />
+
+            <textarea
+              ref={textareaRef}
+              className="composer-textarea"
+              rows={1}
+              placeholder={pendingImage ? "اكتب رسالة مع الصورة أو ابعت..." : "اكتب سؤالك هنا..."}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              className="composer-send-btn"
+              onClick={handleSend}
+              disabled={!pendingImage && !inputText.trim()}
+              title="إرسال"
+            >
+              <FiSend size={18} />
+            </motion.button>
+          </div>
         </div>
       </div>
     </>

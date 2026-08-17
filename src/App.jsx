@@ -1,5 +1,7 @@
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import AuthLayout from "./SharedModule/AuthLayout/AuthLayout";
 import NotFound from "./SharedModule/NotFound/NotFound";
@@ -16,16 +18,19 @@ import ProtectedRoute from "./SharedModule/ProtectedRoute/ProtectedRoute";
 
 function App() {
   const routes = createBrowserRouter([
-    /* ================= AUTH ROUTES ================= */
+    /* ================= LANDING + AUTH ================= */
     {
       path: "/",
-      element: <AuthLayout />,
       errorElement: <NotFound />,
       children: [
-        { index: true, element: <Login /> },
-        { path: "login", element: <Login /> },
-        { path: "register", element: <Register /> },
-        { path: "welcome", element: <Welcome /> },
+        { index: true, element: <Welcome /> },
+        {
+          element: <AuthLayout />,
+          children: [
+            { path: "login", element: <Login /> },
+            { path: "register", element: <Register /> },
+          ],
+        },
       ],
     },
 
@@ -57,7 +62,18 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={routes} />;
+  return (
+    <>
+      <RouterProvider router={routes} />
+      <ToastContainer
+        position="top-center"
+        rtl
+        theme="dark"
+        autoClose={3500}
+        hideProgressBar
+      />
+    </>
+  );
 }
 
 export default App;

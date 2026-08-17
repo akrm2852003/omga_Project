@@ -38,6 +38,25 @@ const formatMessage = (text = "") => {
     },
   );
 
+  /* ================= حماية الكود (``` و `) قبل أي تنسيق تاني =================
+     لازم نشيل الكود بره الأول قبل الـ Bold/Italic، لأن لو فيه * جوا كود
+     (زي 2*3 أو أي كود عادي)، الـ regex بتاع ** أو * هيتفاعل معاه ويبوظه
+     قبل ما يوصل لسطر استخراج الكود أصلاً.
+  ================================================================= */
+  const codePlaceholders = [];
+  const CODE_TOKEN = (i) => `⟦CODE_${i}⟧`;
+
+  formatted = formatted.replace(/```([\s\S]+?)```/g, (_, code) => {
+    const key = CODE_TOKEN(codePlaceholders.length);
+    codePlaceholders.push(`<pre class="chat-code">${code}</pre>`);
+    return key;
+  });
+  formatted = formatted.replace(/`([^`]+)`/g, (_, code) => {
+    const key = CODE_TOKEN(codePlaceholders.length);
+    codePlaceholders.push(`<code class="chat-inline-code">${code}</code>`);
+    return key;
+  });
+
   /* ================= حماية المعادلات بين $...$ ================= */
   const mathPlaceholders = [];
   const MATH_TOKEN = (i) => `⟦MATH_${i}⟧`;
@@ -105,18 +124,8 @@ const formatMessage = (text = "") => {
   /* ================= Lists ================= */
   formatted = formatted.replace(/(^|\n)\*\s+/g, "$1• ");
 
-  /* ================= Code ================= */
-  formatted = formatted.replace(
-    /```([\s\S]+?)```/g,
-    '<pre class="chat-code">$1</pre>',
-  );
-  formatted = formatted.replace(
-    /`([^`]+)`/g,
-    '<code class="chat-inline-code">$1</code>',
-  );
-
   /* ================= Superscript ================= */
-  formatted = formatted.replace(/([A-Za-z0-9\]\)])\^(\d+)/g, "$1<sup>$2</sup>");
+  formatted = formatted.replace(/([A-Za-z0-9\])])\^(\d+)/g, "$1<sup>$2</sup>");
 
   /* ================= Tips ================= */
   formatted = formatted.replace(
@@ -144,7 +153,8 @@ const formatMessage = (text = "") => {
     if (
       /^<(h[1-3]|p|pre|blockquote|div|ul|ol|li|table|thead|tbody|tr|td|th)[\s>]/i.test(trimmed) ||
       trimmed.startsWith("⟦HTML_") ||
-      trimmed.startsWith("⟦MATH_")
+      trimmed.startsWith("⟦MATH_") ||
+      trimmed.startsWith("⟦CODE_")
     ) {
       return line;
     }
@@ -200,6 +210,11 @@ const formatMessage = (text = "") => {
   /* ================= رجوع HTML ================= */
   htmlPlaceholders.forEach((html, i) => {
     formatted = formatted.replace(HTML_TOKEN(i), html);
+  });
+
+  /* ================= رجوع الكود ================= */
+  codePlaceholders.forEach((code, i) => {
+    formatted = formatted.replace(CODE_TOKEN(i), code);
   });
 
   return formatted;

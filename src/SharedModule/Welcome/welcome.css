@@ -1,0 +1,245 @@
+.landing {
+  background: var(--bg-canvas);
+  overflow-x: hidden;
+}
+
+/* ================= Nav ================= */
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.landing-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.landing-nav-brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+}
+
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ================= Hero ================= */
+
+.hero {
+  position: relative;
+  padding: var(--space-16) var(--space-6) var(--space-24);
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-6);
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.hero h1 {
+  max-width: 760px;
+}
+
+.hero p.hero-desc {
+  max-width: 560px;
+  font-size: 1.05rem;
+}
+
+.hero-cta {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── hero mockup: بطاقة شات وهمية بتتحرك بـ GSAP ─────────────── */
+
+.hero-mockup {
+  margin-top: var(--space-8);
+  width: 100%;
+  max-width: 560px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-5);
+  text-align: right;
+}
+
+.hero-mockup-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.hero-mockup-row.user { flex-direction: row-reverse; }
+
+.hero-mockup-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--brand-gradient);
+}
+
+.hero-mockup-bubble {
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+}
+
+.hero-mockup-row.user .hero-mockup-bubble {
+  background: var(--brand-gradient);
+  color: #fff;
+}
+
+/* ================= Sections shared ================= */
+
+.landing-section {
+  padding: var(--space-16) var(--space-6);
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.landing-section h2 {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+/* ================= How it works ================= */
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+}
+
+.step-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.step-card .step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-gradient-soft);
+  color: var(--brand-primary-2);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+}
+
+.step-card h3 { margin-bottom: var(--space-2); }
+.step-card p { font-size: 0.9rem; }
+
+/* ================= Subjects ================= */
+
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.subject-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.subject-card .subject-emoji {
+  font-size: 2rem;
+  margin-bottom: var(--space-3);
+}
+
+.subject-card h3 { font-size: 1rem; }
+
+/* ================= Stats ================= */
+
+.stats-section {
+  background: var(--brand-gradient-soft);
+  border-radius: var(--radius-xl);
+  margin: var(--space-16) var(--space-6);
+  padding: var(--space-12) var(--space-6);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-6);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-card .stat-number {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stat-card p {
+  font-size: 0.85rem;
+  margin-top: var(--space-1);
+}
+
+/* ================= Footer CTA ================= */
+
+.landing-footer {
+  text-align: center;
+  padding: var(--space-16) var(--space-6) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.landing-footer-copy {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-top: var(--space-6);
+}

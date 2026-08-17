@@ -1,314 +1,233 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap");
+/* ================= محتوى رسالة الـ AI المُنسّق ================= */
 
-/* ================= Root Variables ================= */
-
-:root {
-    --bg-main: #f6f8fc;
-    --bg-card: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #475569;
-    --border-soft: #e2e8f0;
-    --accent-primary: #2563eb;
-    --accent-scientific: #0ea5e9;
-    --accent-math: #f59e0b;
-    --accent-tip: #ec4899;
+.custom-message-content {
+  direction: rtl;
+  text-align: right;
+  overflow-x: hidden;
+  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-primary);
 }
-
-
-/* ================= Layout Wrapper ================= */
-
-.chat-wrapper {
-    height: 100vh;
-    width: 100%;
-    background: var(--bg-main);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 16px;
-}
-
-.chat-main {
-    width: 100%;
-    max-width: 920px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--bg-card);
-    border-radius: 18px;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
-}
-
-
-/* ================= Container ================= */
-
-.chat-container {
-    padding: 20px;
-    font-family: "IBM Plex Sans Arabic", sans-serif;
-    color: var(--text-primary);
-    background: var(--bg-card);
-}
-
-
-/* ================= Scroll Area ================= */
-
-.chat-message-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-}
-
 
 /* ================= Headings ================= */
 
 .chat-heading {
-    font-weight: 700;
-    margin: 6px 0 2px;
-    color: var(--text-primary);
-    line-height: 1.4;
+  font-weight: 700;
+  margin: 6px 0 2px;
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
-.chat-heading.h1 { font-size: 1.4rem; }
-.chat-heading.h2 { font-size: 1.2rem; }
-.chat-heading.h3 { font-size: 1.05rem; color: var(--accent-primary); }
-
+.chat-heading.h1 { font-size: 1.3rem; }
+.chat-heading.h2 { font-size: 1.15rem; }
+.chat-heading.h3 { font-size: 1.02rem; color: var(--brand-primary-2); }
 
 /* ================= Paragraphs ================= */
 
 .chat-paragraph {
-    font-size: 0.92rem;
-    line-height: 1.65;
-    margin: 0;
-    padding: 0;
-    color: white !important;
+  font-size: 0.93rem;
+  line-height: 1.7;
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
 }
 
 .chat-italic {
-    font-style: italic;
-    color: #94a3b8;
+  font-style: italic;
+  color: var(--text-secondary);
 }
 
 .chat-subtitle {
-    color: #93c5fd;
-    font-weight: 600;
+  color: var(--brand-primary-2);
+  font-weight: 600;
 }
 
-
-/* ================= Scientific Card ================= */
+/* ================= Scientific Card 🔹 ================= */
 
 .chat-scientific {
-    background: rgba(14, 165, 233, 0.1);
-    border-left: 3px solid var(--accent-scientific);
-    padding: 5px 10px;
-    border-radius: 7px;
-    font-weight: 500;
-    color: #bae6fd;
-    margin: 3px 0 !important;
+  background: rgba(124, 92, 255, 0.1);
+  border-right: 3px solid var(--brand-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
-
-/* ================= Funny ================= */
+/* ================= Funny 🎭 ================= */
 
 .chat-funny {
-    background: rgba(234, 179, 8, 0.1);
-    border-left: 3px solid #eab308;
-    padding: 5px 10px;
-    border-radius: 7px;
-    font-style: italic;
-    color: #fde68a !important;
-    margin: 3px 0 !important;
+  background: rgba(255, 176, 32, 0.1);
+  border-right: 3px solid var(--brand-accent);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-style: italic;
+  color: #ffd98a;
 }
 
-
-/* ================= Tip Card ================= */
+/* ================= Tip Card 💡 ================= */
 
 .chat-tip-paragraph {
-    background: rgba(236, 72, 153, 0.08);
-    border-left: 3px solid var(--accent-tip);
-    padding: 5px 10px;
-    border-radius: 7px;
-    font-weight: 500;
-    color: #fbcfe8;
-    margin: 3px 0 !important;
+  background: rgba(255, 110, 199, 0.08);
+  border-right: 3px solid var(--brand-pink);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  color: #ffc9ea;
 }
-
 
 /* ================= Step Card (default paragraphs) ================= */
 
 .card-step {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    margin: 0 !important;
-    font-weight: 400;
-    color: #cbd5e1;
-    display: block;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-weight: 400;
+  color: var(--text-primary);
+  display: block;
 }
-
 
 /* ================= Math Card ================= */
 
 .chat-math-card {
-    background: rgba(245, 158, 11, 0.08);
-    border-left: 3px solid var(--accent-math);
-    padding: 5px 10px;
-    margin: 3px 0 !important;
-    border-radius: 7px;
-    font-family: "Fira Code", monospace;
-    font-size: 0.87rem;
-    font-weight: 500;
-    color: #fde68a;
+  background: rgba(255, 176, 32, 0.08);
+  border-right: 3px solid var(--brand-accent);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-family: "Fira Code", monospace;
+  font-size: 0.87rem;
+  font-weight: 500;
+  color: #ffd98a;
 }
-
 
 /* ================= Inline Math ================= */
 
 .chat-inline-math {
-    background: rgba(245, 158, 11, 0.15);
-    color: #fde68a;
-    padding: 1px 4px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.87rem;
-    font-family: "Fira Code", monospace;
+  background: rgba(255, 176, 32, 0.15);
+  color: #ffd98a;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.87rem;
+  font-family: "Fira Code", monospace;
 }
-
 
 /* ================= Highlights ================= */
 
 .chat-inline-highlight {
-    background: rgba(96, 165, 250, 0.15);
-    color: #93c5fd;
-    padding: 0 4px;
-    border-radius: 3px;
-    font-weight: 500;
-    font-size: 0.9em;
+  background: rgba(124, 92, 255, 0.15);
+  color: var(--brand-primary-2);
+  padding: 0 4px;
+  border-radius: 3px;
+  font-weight: 500;
+  font-size: 0.9em;
 }
 
 .chat-inline-highlight-important {
-    background: rgba(167, 139, 250, 0.18);
-    color: #c4b5fd;
-    padding: 0 4px;
-    border-radius: 3px;
-    font-weight: 600;
-    font-size: 0.9em;
+  background: rgba(155, 123, 255, 0.2);
+  color: #c9bbff;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 0.9em;
 }
 
-/* الأرقام — بس لون مختلف، من غير background block */
 .chat-inline-number {
-    color: #7dd3fc;
-    font-weight: 600;
-    font-family: "Fira Code", monospace;
-    font-size: 0.88em;
+  color: #7dd3fc;
+  font-weight: 600;
+  font-family: "Fira Code", monospace;
+  font-size: 0.88em;
 }
-
 
 /* ================= Code ================= */
 
 .chat-code {
-    background: #0f172a;
-    color: #e2e8f0;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-family: "Fira Code", monospace;
-    font-size: 0.84rem;
-    overflow-x: auto;
-    margin: 4px 0 !important;
-    border: 1px solid rgba(255,255,255,0.06);
-    line-height: 1.6;
+  background: var(--bg-canvas);
+  color: #e2e8f0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-family: "Fira Code", monospace;
+  font-size: 0.84rem;
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  line-height: 1.6;
+  direction: ltr;
+  text-align: left;
 }
 
 .chat-inline-code {
-    background: rgba(255,255,255,0.1);
-    color: #bfdbfe;
-    padding: 0 5px;
-    border-radius: 4px;
-    font-family: "Fira Code", monospace;
-    font-size: 0.84em;
+  background: var(--bg-surface-3);
+  color: #bfdbfe;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-family: "Fira Code", monospace;
+  font-size: 0.84em;
+  direction: ltr;
+  unicode-bidi: embed;
 }
 
-
-/* ================= Math Block ================= */
-
-.chat-math-block {
-    background: rgba(245, 158, 11, 0.08);
-    border-left: 3px solid var(--accent-math);
-    padding: 5px 10px;
-    margin: 3px 0 !important;
-    border-radius: 7px;
-    font-family: "Fira Code", monospace;
-    font-size: 0.87rem;
-    color: #fde68a;
-}
-
-
-/* ================= HTML Frame (AI Content) ================= */
+/* ================= HTML Frame (رسم توضيحي / صورة) ================= */
 
 .chat-html-frame {
-    all: unset;
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    margin: 5px 0;
-    padding: 12px;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    overflow: hidden;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
 }
 
 .chat-html-frame img {
-    max-width: 100%;
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 8px;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-sm);
+  background: #eef0f5; /* لون خلفية لحد ما الصورة تحمّل */
 }
 
 .chat-html-frame svg {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
-    max-width: 100%;
-    background: #ffffff;
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  background: #ffffff;
 }
 
 .chat-html-frame div { max-width: 100%; overflow: hidden; }
-.chat-html-frame * { color: #000; box-sizing: border-box; }
-
-
-/* ================= Arabic Support ================= */
-
-.custom-message-content {
-    direction: rtl;
-    text-align: right;
-    overflow-x: hidden;
-    touch-action: pan-y pinch-zoom;
-    font-size: 0.92rem;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-}
-
+.chat-html-frame * { color: #14161f; box-sizing: border-box; }
 
 /* ================= Answer Highlight ================= */
 
 .chat-answer-highlight {
-    background: rgba(251, 191, 36, 0.18);
-    border-right: 3px solid #fbbf24;
-    border-left: none;
-    color: #fde68a !important;
-    padding: 5px 10px 5px 14px;
-    border-radius: 7px;
-    font-weight: 700;
-    margin: 3px 0 !important;
-    font-size: 0.95rem;
+  background: rgba(255, 176, 32, 0.16);
+  border-right: 3px solid var(--brand-accent);
+  color: #ffe1a3 !important;
+  padding: 8px 14px 8px 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.96rem;
 }
 
+/* ================= Streaming cursor ================= */
 
-/* ================= Input Area ================= */
+.streaming-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--brand-gradient);
+  vertical-align: text-bottom;
+  border-radius: 2px;
+  animation: blink-caret 0.9s steps(2) infinite;
+}
 
-.cs-message-input {
-    border-top: 1px solid var(--border-soft);
+@keyframes blink-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
 }

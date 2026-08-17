@@ -1,10 +1,12 @@
 import axios from "axios";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../../../assets/logo.png";
+import { FiMail, FiAlertCircle } from "react-icons/fi";
+import { motion } from "framer-motion";
 import { UserContext } from "../../../Context/AuthContext/AuthContext";
 import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
+import AuthCard from "../../../SharedModule/AuthCard/AuthCard";
 
 export default function Login() {
   const { setUserId, setUserEmail, setUserName } = useContext(UserContext);
@@ -12,13 +14,18 @@ export default function Login() {
 
   const {
     register,
-    formState: { errors },
     handleSubmit,
+    formState: { errors },
   } = useForm();
+
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const navigate = useNavigate();
 
   async function onSubmit(data) {
+    setFormError("");
+    setLoading(true);
     try {
       const response = await axios.post(
         "https://aiservice.magacademy.co/v2/signin",
@@ -28,15 +35,11 @@ export default function Login() {
       const user = response.data.user;
       const chats = response.data.chats || [];
 
-      // حفظ بيانات المستخدم في localStorage
       localStorage.setItem("userId", user.user_id);
       localStorage.setItem("userEmail", user.user_email);
       localStorage.setItem("userName", user.user_name);
-
-      // حفظ الشاتس في localStorage مباشرة
       localStorage.setItem("userChatsId", JSON.stringify(chats));
 
-      // تحديث Contexts
       setUserId(user.user_id);
       setUserEmail(user.user_email);
       setUserName(user.user_name);
@@ -45,50 +48,57 @@ export default function Login() {
       navigate("/home");
     } catch (error) {
       console.log(error);
+      if (error.response?.status === 404) {
+        setFormError("مفيش حساب بالإيميل ده — سجّل حساب جديد الأول.");
+      } else {
+        setFormError("حصلت مشكلة في الاتصال، حاول تاني.");
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="auth-container">
-      <div className="container-fluid bg-overlay">
-        <div className="row vh-100 justify-content-center align-items-center">
-          <div className="col-sm-12 col-md-8 col-lg-7 col-xl-5 p-4 rounded-2 form-bg">
-            <div className="form-container">
-              <div className="logo-container banner text-center">
-                <img className="w-25" src={logo} alt="" />
-              </div>
-
-              <form className="mt-4" onSubmit={handleSubmit(onSubmit)}>
-                <div className="input-group mb-3">
-                  <span className="input-group-text">
-                    <i className="fa-solid fa-envelope"></i>
-                  </span>
-                  <input
-                    {...register("user_email", {
-                      required: "Email is required",
-                    })}
-                    type="email"
-                    className="form-control"
-                    placeholder="Enter your E-mail"
-                  />
-                </div>
-
-                <div className="links d-flex justify-content-between">
-                  <Link
-                    className="text-decoration-none link-style"
-                    to={"/register"}
-                  >
-                    Register Now
-                  </Link>
-                </div>
-                <button className="w-100 m-auto d-block mt-3 login-btn-style">
-                  Login
-                </button>
-              </form>
-            </div>
+    <AuthCard
+      title="أهلاً بيك تاني"
+      subtitle="سجّل دخولك بإيميلك عشان تكمل مذاكرتك"
+      footer={
+        <>
+          لسه معملتش حساب؟ <Link to="/register">سجّل دلوقتي</Link>
+        </>
+      }
+    >
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        {formError && (
+          <div className="form-alert error">
+            <FiAlertCircle size={16} />
+            {formError}
           </div>
+        )}
+
+        <div className="field">
+          <label htmlFor="user_email">البريد الإلكتروني</label>
+          <div className="field-input-wrap">
+            <FiMail size={16} />
+            <input
+              id="user_email"
+              type="email"
+              placeholder="example@mail.com"
+              {...register("user_email", { required: "البريد الإلكتروني مطلوب" })}
+            />
+          </div>
+          {errors.user_email && <div className="field-error">{errors.user_email.message}</div>}
         </div>
-      </div>
-    </div>
+
+        <motion.button
+          type="submit"
+          className="btn btn-primary btn-submit"
+          disabled={loading}
+          whileTap={{ scale: 0.98 }}
+        >
+          {loading ? <span className="btn-spinner" /> : "دخول"}
+        </motion.button>
+      </form>
+    </AuthCard>
   );
 }
