@@ -4,6 +4,7 @@ import axios from "axios";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import logo from "../../assets/logo-icon.png";
+import Footer from "../Footer/Footer";
 import "./welcome.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -201,11 +202,12 @@ export default function Welcome() {
         </div>
       </section>
 
-      <footer className="landing-footer">
+      <section className="landing-final-cta">
         <h2>يلا نبدأ مذاكرتك النهاردة</h2>
         <Link className="btn btn-primary" to="/register">اعمل حسابك مجاناً</Link>
-        <p className="landing-footer-copy">© {new Date().getFullYear()} OmGa AI — منصة مستر محمد عبدالجواد</p>
-      </footer>
+      </section>
+
+      <Footer />
     </div>
   );
 }
