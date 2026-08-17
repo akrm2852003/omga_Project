@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../../assets/logo-icon.png";
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import "./authLayout.css";
 
 export default function AuthLayout() {
@@ -25,6 +26,9 @@ export default function AuthLayout() {
       </div>
 
       <div className="auth-form-area">
+        <div className="auth-form-area-toggle">
+          <ThemeToggle />
+        </div>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

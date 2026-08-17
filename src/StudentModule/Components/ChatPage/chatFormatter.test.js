@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import formatMessage from "./chatFormatter";
+import formatMessage, { buildImageFrame } from "./chatFormatter";
 
 describe("formatMessage", () => {
   it("converts headers", () => {
@@ -78,5 +78,26 @@ describe("formatMessage", () => {
 
   it("returns an empty string for empty input without throwing", () => {
     expect(formatMessage("")).toBe("");
+  });
+
+  it("wraps a diagram <img> with zoom and download action links", () => {
+    const url = "https://aiservice.magacademy.co/uploads/drawings/x.webp";
+    const out = formatMessage(`<div style="margin:10px"><img src="${url}" alt="drawing"/></div>`);
+
+    expect(out).toContain("chat-image-actions-wrap");
+    // زرار التكبير: لينك يفتح الصورة الأصلية في تاب جديد
+    expect(out).toContain(`href="${url}" target="_blank"`);
+    // زرار التحميل: لينك download حقيقي بدون أي JS
+    expect(out).toContain(`href="${url}" download`);
+  });
+
+  it("buildImageFrame produces a framed, action-wrapped image from a bare URL", () => {
+    const url = "https://aiservice.magacademy.co/uploads/drawings/legacy.webp";
+    const out = buildImageFrame(url);
+
+    expect(out).toContain("chat-html-frame");
+    expect(out).toContain(`src="${url}"`);
+    expect(out).toContain("chat-image-actions-wrap");
+    expect(out).toContain(`href="${url}" download`);
   });
 });

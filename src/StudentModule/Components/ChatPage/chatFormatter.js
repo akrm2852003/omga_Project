@@ -1,5 +1,30 @@
 import "./chatFormatter.css";
 
+// بتلف أي <img> موجودة جوه بلوك HTML بأزرار "تكبير" (بيفتح الصورة الأصلية
+// في تاب جديد) و"تحميل" (رابط download حقيقي، من غير أي JS) — شغالة بمجرد
+// HTML/CSS عادي عشان الصورة بتتحط جوه dangerouslySetInnerHTML مش React.
+function wrapImagesWithActions(html) {
+  return html.replace(
+    /<img\s+([^>]*?)src=["']([^"']+)["']([^>]*?)>/gi,
+    (_, before, src, after) =>
+      `<div class="chat-image-actions-wrap">` +
+      `<img ${before}src="${src}"${after}>` +
+      `<div class="chat-image-actions">` +
+      `<a class="chat-image-action" href="${src}" target="_blank" rel="noopener noreferrer" title="تكبير">⤢</a>` +
+      `<a class="chat-image-action" href="${src}" download title="تحميل">⬇</a>` +
+      `</div></div>`,
+  );
+}
+
+// بتبني بلوك صورة كامل (frame + أزرار) — بتتستخدم برضو لو النص متحولش
+// لصورة أصلاً بس رابط الصورة موجود في msg.images (شات قديم قبل تحسين
+// الباك اند)، عشان الصورة ما تضيعش.
+export function buildImageFrame(src, alt = "رسم توضيحي") {
+  return wrapImagesWithActions(
+    `<div class="chat-html-frame"><img src="${src}" alt="${alt}"/></div>`,
+  );
+}
+
 const formatMessage = (text = "") => {
   let formatted = text.trim();
 
@@ -31,6 +56,8 @@ const formatMessage = (text = "") => {
           return `<svg${cleanedAttrs} style="width:100%;height:auto;display:block;">`;
         });
       }
+
+      processed = wrapImagesWithActions(processed);
 
       const framed = `<div class="chat-html-frame">${processed}</div>`;
       htmlPlaceholders.push(framed);

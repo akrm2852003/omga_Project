@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { UserContext } from "../../Context/AuthContext/UserContext";
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import "./naveBar.css";
 
 export default function NavBar({ toggleSidebar }) {
@@ -23,6 +24,7 @@ export default function NavBar({ toggleSidebar }) {
       </button>
 
       <div className="topbar-user">
+        <ThemeToggle />
         <div className="topbar-avatar">{initial}</div>
         <span className="topbar-username">{userName || "زائر"}</span>
 

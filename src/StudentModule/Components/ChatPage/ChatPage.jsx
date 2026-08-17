@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { UserChatsId } from "../../../Context/ChatsContext/UserChatsId";
 import { UserContext } from "../../../Context/AuthContext/UserContext";
 import formatMessage from "./chatFormatter";
+import { mapStoredMessage } from "./mapStoredMessage";
 import "./chatFormatter.css";
 import "./chatPage.css";
 
@@ -128,22 +129,7 @@ export default function ChatPage() {
 
       if (activeChatFetchRef.current !== chatId) return; // فيه شات أحدث اتطلب في الوقت ده، تجاهل الرد ده
 
-      const formattedMessages = response.data.chat.map((msg) => {
-        // 🐛 فيكس: صورة الطالب المرفوعة كانت بتتفقد لما تفتح شات قديم تاني —
-        // formattedMessage كان بيتحط null لأي رسالة user، لكن الـ render
-        // بيستخدم نفس الحقل ده كـ src للصورة. كمان msg.images (مصفوفة، من
-        // نظام Subject Stream) دلوقتي بتتقرا زي msg.image (نص، من نظام v2).
-        const imageUrl = msg.image || msg.images?.[0] || null;
-        return {
-          message:          msg.text,
-          formattedMessage: msg.role !== "user" ? formatMessage(msg.text) : imageUrl,
-          sender:           msg.role === "user" ? "You" : "AI",
-          direction:        msg.role === "user" ? "outgoing" : "incoming",
-          sentTime:         "just now",
-          isImage:          msg.role === "user" && !!imageUrl,
-          imageUrl,
-        };
-      });
+      const formattedMessages = response.data.chat.map(mapStoredMessage);
       setMessages(formattedMessages);
       setCurrentChatId(chatId);
       currentChatIdRef.current = chatId;

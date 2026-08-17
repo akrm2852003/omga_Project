@@ -24,6 +24,7 @@
   border-radius: 50%;
   filter: blur(60px);
   opacity: 0.55;
+  pointer-events: none; /* زخرفة بس — متمنعش كليك على أي حاجة تحتها */
 }
 
 .auth-visual::before {
@@ -87,11 +88,19 @@
 }
 
 .auth-form-area {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
+}
+
+.auth-form-area-toggle {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 2;
 }
 
 @media (max-width: 900px) {

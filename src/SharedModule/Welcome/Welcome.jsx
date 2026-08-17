@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import logo from "../../assets/logo-icon.png";
 import Footer from "../Footer/Footer";
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import "./welcome.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -130,6 +131,7 @@ export default function Welcome() {
           <span>OmGa AI</span>
         </div>
         <div className="landing-nav-links">
+          <ThemeToggle />
           <Link className="btn btn-ghost" to="/login">دخول</Link>
           <Link className="btn btn-primary" to="/register">ابدأ مجاناً</Link>
         </div>

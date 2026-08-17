@@ -50,12 +50,18 @@
   isolation: isolate; /* الخلفيات بره ما تتعارضش مع محتوى السكاشن اللي بعدها */
 }
 
-/* ── خلفية شبكة خفيفة + spotlight بنفسجي خلف العنوان — لمسة عمق تجارية ── */
+/* ── خلفية شبكة خفيفة + spotlight بنفسجي خلف العنوان — لمسة عمق تجارية ──
+   🐛 فيكس: inset السالب كان بيخلي الطبقة الزخرفية دي تمتد فوق الـ nav وتقف
+   قدام زراير "دخول"/"ابدأ مجاناً" وتمنع الكليك عليهم، حتى مع z-index:-1
+   (z-index بس بيرتب جوه stacking context بتاع .hero نفسه، مش قدام
+   .landing-nav اللي جاي قبله في الـ DOM). pointer-events:none بيمنع أي
+   طبقة زخرفية زي دي إنها تعترض كليكات تاني حتى لو تداخلت بصرياً. */
 .hero::before {
   content: "";
   position: absolute;
   inset: -10% -10% -20%;
   z-index: -1;
+  pointer-events: none;
   background-image:
     radial-gradient(60% 45% at 50% 18%, rgba(124, 92, 255, 0.28), transparent 70%),
     radial-gradient(40% 30% at 85% 60%, rgba(255, 110, 199, 0.14), transparent 70%),

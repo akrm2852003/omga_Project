@@ -93,13 +93,13 @@
 
 .form-alert.error {
   background: rgba(244, 63, 94, 0.12);
-  color: #ff9fae;
+  color: var(--danger);
   border: 1px solid rgba(244, 63, 94, 0.3);
 }
 
 .form-alert.success {
   background: rgba(34, 197, 94, 0.12);
-  color: #7fe3a4;
+  color: var(--success);
   border: 1px solid rgba(34, 197, 94, 0.3);
 }
 

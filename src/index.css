@@ -60,7 +60,53 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
+  /* ── ألوان نصوص كروت المحتوى (chatFormatter) — لازم تتقلب مع الثيم
+     عشان الباستيل الفاتح (مصمم لخلفية غامقة) يفضل مقروء على خلفية بيضا ── */
+  --content-purple-text: #c9bbff;
+  --content-amber-text:  #ffd98a;
+  --content-pink-text:   #ffc9ea;
+  --content-cyan-text:   #7dd3fc;
+  --content-code-text:   #e2e8f0;
+  --content-inline-code-text: #bfdbfe;
+
   color-scheme: dark;
+}
+
+/* ============================================================
+   الثيم الفاتح — بيتفعّل بـ data-theme="light" على <html>
+   (متحكم فيه من ThemeContext، ومحفوظ في localStorage).
+   العلامة التجارية (brand-*) ثابتة في الاتنين، بس الخلفيات/النصوص/الظلال
+   بتتقلب عشان تفضل واضحة على خلفية فاتحة.
+   ============================================================ */
+:root[data-theme="light"] {
+  --bg-canvas:    #F6F7FB;
+  --bg-surface:   #FFFFFF;
+  --bg-surface-2: #F1F2F8;
+  --bg-surface-3: #E6E8F2;
+
+  --brand-gradient-soft: linear-gradient(135deg, rgba(124,92,255,0.12) 0%, rgba(255,110,199,0.08) 100%);
+
+  --text-primary:   #171A29;
+  --text-secondary: #565D74;
+  --text-tertiary:  #8890A6;
+  --text-on-brand:  #FFFFFF;
+
+  --border-soft:   rgba(15, 17, 31, 0.08);
+  --border-strong: rgba(15, 17, 31, 0.14);
+  --shadow-sm:   0 2px 8px rgba(15, 17, 31, 0.06);
+  --shadow-md:   0 8px 24px rgba(15, 17, 31, 0.08);
+  --shadow-lg:   0 20px 50px rgba(15, 17, 31, 0.12);
+  --shadow-glow: 0 0 30px rgba(124, 92, 255, 0.18);
+  --shadow-glow-accent: 0 0 24px rgba(255, 176, 32, 0.18);
+
+  --content-purple-text: #6D28D9;
+  --content-amber-text:  #92400E;
+  --content-pink-text:   #9D174D;
+  --content-cyan-text:   #0369A1;
+  --content-code-text:   #1E293B;
+  --content-inline-code-text: #1D4ED8;
+
+  color-scheme: light;
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
