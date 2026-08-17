@@ -19,9 +19,10 @@
 }
 
 .sidebar-brand img {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
+  object-fit: cover;
 }
 
 .sidebar-brand span {

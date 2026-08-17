@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo-icon.png";
 import "./authCard.css";
 
 export default function AuthCard({ title, subtitle, children, footer }) {

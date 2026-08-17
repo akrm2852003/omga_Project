@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCamera, FiPaperclip, FiSend, FiX } from "react-icons/fi";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { UserChatsId } from "../../../Context/ChatsContext/UserChatsId";
 import { UserContext } from "../../../Context/AuthContext/UserContext";
 import formatMessage from "./chatFormatter";
@@ -11,20 +11,27 @@ import "./chatPage.css";
 
 const API_BASE = "https://aiservice.magacademy.co";
 
+// كل مادة بتتكلم مع الـ endpoint المخصص بتاعها في الباك اند (handleSubjectStream)
+// بدل الـ endpoint العام — نفس الباراميترز والـ SSE format، مجرد مسار مختلف.
 const SUBJECT_SUGGESTIONS = [
-  { label: "كيمياء", emoji: "🧪", prompt: "ممكن تشرحلي درس التآصل في الكيمياء؟" },
-  { label: "فيزياء", emoji: "⚛️", prompt: "عايز أفهم قانون نيوتن التاني بشكل مبسط" },
-  { label: "أحياء وجيولوجيا", emoji: "🧬", prompt: "اشرحلي الانقسام الميتوزي خطوة بخطوة" },
-  { label: "عربي", emoji: "📖", prompt: "وضحلي الفرق بين المفعول المطلق والمفعول لأجله" },
-  { label: "إنجليزي", emoji: "🔤", prompt: "Explain the difference between present perfect and past simple" },
+  { key: "chemistry", label: "كيمياء",          emoji: "🧪", endpoint: "/ask-by-question-id-chemistry-stream", prompt: "ممكن تشرحلي درس التآصل في الكيمياء؟" },
+  { key: "physics",   label: "فيزياء",          emoji: "⚛️", endpoint: "/ask-by-question-id-physics-stream",   prompt: "عايز أفهم قانون نيوتن التاني بشكل مبسط" },
+  { key: "biogeo",    label: "أحياء وجيولوجيا", emoji: "🧬", endpoint: "/ask-by-question-id-biogeo-stream",    prompt: "اشرحلي الانقسام الميتوزي خطوة بخطوة" },
+  { key: "arabic",    label: "عربي",            emoji: "📖", endpoint: "/ask-by-question-id-arabic-stream",    prompt: "وضحلي الفرق بين المفعول المطلق والمفعول لأجله" },
+  { key: "english",   label: "إنجليزي",         emoji: "🔤", endpoint: "/ask-by-question-id-english-stream",   prompt: "Explain the difference between present perfect and past simple" },
 ];
 
+const DEFAULT_SUBJECT_KEY = SUBJECT_SUGGESTIONS[0].key;
+
 export default function ChatPage() {
-  const { id } = useParams();
+  // 🔒 رقم الشات بيتبعت عن طريق location.state مش الـ URL path — عشان
+  // الـ id متبقاش ظاهرة في السيرش بار.
+  const location = useLocation();
+  const id = location.state?.chatId || null;
   const navigate = useNavigate();
 
   const { setUserChatsId } = useContext(UserChatsId);
-  const { userEmail } = useContext(UserContext);
+  const { userEmail, userName } = useContext(UserContext);
 
   const [messages, setMessages] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(id || null);
@@ -33,6 +40,8 @@ export default function ChatPage() {
   const [cameraStream, setCameraStream] = useState(null);
   const [pendingImage, setPendingImage] = useState(null);
   const [inputText, setInputText] = useState("");
+  const [subject, setSubject] = useState(DEFAULT_SUBJECT_KEY);
+  const [isExistingV2Chat, setIsExistingV2Chat] = useState(!!id); // بيتحكم بس في إظهار/إخفاء اختيار المادة
 
   const videoRef         = useRef(null);
   const canvasRef        = useRef(null);
@@ -44,6 +53,13 @@ export default function ChatPage() {
   const isStreamingRef     = useRef(false); // ref لمنع الـ useEffect من مسح الشات أثناء الـ Stream
   const streamingChatIdRef = useRef(null); // هو الشات رقم كام اللي بيعمله Stream دلوقتي (مش أي شات)
   const activeChatFetchRef = useRef(null); // آخر chatId اتطلب من getChat — بيمنع رد قديم متأخر إنه يكتب فوق شات جديد
+
+  // 🔀 مصدر الشات الحالي: "v2" لو اتحمّل من محادثة موجودة قبل كده (عن طريق
+  // /v2/chat/:id)، أو "subject" لو شات جديد لسه ما اتبعتش فيه أي رسالة.
+  // الشاتات القديمة (v2) لازم تفضل بتتكلم مع نفس الـ endpoint اللي اتحفظت
+  // بيه أصلاً، عشان الرسايل الجديدة تتضاف لنفس المحادثة صح؛ شاتات جديدة
+  // بتتكلم مع الـ endpoint بتاع المادة المختارة.
+  const chatSourceRef = useRef(id ? "v2" : "subject");
 
   // ── sync ref مع الـ state ────────────────────────────────────────
   useEffect(() => {
@@ -124,6 +140,8 @@ export default function ChatPage() {
       setMessages(formattedMessages);
       setCurrentChatId(chatId);
       currentChatIdRef.current = chatId;
+      chatSourceRef.current = "v2"; // اتحمّلت من نظام النوتبوكس القديم (v2)
+      setIsExistingV2Chat(true);
     } catch (error) {
       console.log(error);
     }
@@ -151,6 +169,8 @@ export default function ChatPage() {
       setMessages([]);
       setCurrentChatId(null);
       currentChatIdRef.current = null;
+      chatSourceRef.current = "subject"; // شات جديد هيتبعت للمادة المختارة
+      setIsExistingV2Chat(false);
     }
   }, [id]);
 
@@ -182,9 +202,18 @@ export default function ChatPage() {
     const chatIdToUse = currentChatIdRef.current;
     streamingChatIdRef.current = chatIdToUse; // مين الشات اللي الـ Stream ده بتاعه بالظبط
 
+    // 🔀 شات قديم (v2) يفضل يتكلم مع نفس الـ endpoint العام، وشات جديد
+    // يتكلم مع endpoint المادة المختارة — من غير أي تغيير في الباك اند
+    // أو أسماء الباراميترز، الاتنين بياخدوا نفس الحقول بالظبط.
+    const isV2 = chatSourceRef.current === "v2";
+    const targetUrl = isV2
+      ? `${API_BASE}/ask-by-question-id-v2-stream`
+      : `${API_BASE}${SUBJECT_SUGGESTIONS.find((s) => s.key === subject)?.endpoint || SUBJECT_SUGGESTIONS[0].endpoint}`;
+
     const formData = new FormData();
-    formData.append("user_email", userEmail);
-    formData.append("question",   text || "");
+    formData.append("user_email",   userEmail);
+    formData.append("student_name", userName || "");
+    formData.append("question",     text || "");
 
     if (chatIdToUse) formData.append("notebook_id", chatIdToUse);
 
@@ -208,7 +237,7 @@ export default function ChatPage() {
     let accumulatedText = "";
 
     try {
-      const response = await fetch(`${API_BASE}/ask-by-question-id-v2-stream`, {
+      const response = await fetch(targetUrl, {
         method: "POST",
         body:   formData,
         signal: controller.signal,
@@ -272,7 +301,8 @@ export default function ChatPage() {
             setUserChatsId((prev) =>
               prev.includes(newChatId) ? prev : [...prev, newChatId]
             );
-            navigate(`/home/chat/${newChatId}`, { replace: true }); // ✨ ضفنا replace عشان ميبوظش الـ Back
+            // ✨ replace عشان ميبوظش الـ Back — والـ id بيتبعت في الـ state مش في المسار نفسه
+            navigate("/home/chat", { replace: true, state: { chatId: newChatId } });
           }
 
           // ── chunk جديد ──
@@ -466,9 +496,9 @@ export default function ChatPage() {
             <div className="subject-chips">
               {SUBJECT_SUGGESTIONS.map((s) => (
                 <button
-                  key={s.label}
-                  className="subject-chip"
-                  onClick={() => { setInputText(s.prompt); textareaRef.current?.focus(); }}
+                  key={s.key}
+                  className={`subject-chip ${subject === s.key ? "active" : ""}`}
+                  onClick={() => { setSubject(s.key); setInputText(s.prompt); textareaRef.current?.focus(); }}
                 >
                   <span>{s.emoji}</span> {s.label}
                 </button>
@@ -510,18 +540,26 @@ export default function ChatPage() {
               );
             })}
 
-            {isTyping && (
-              <div className="msg-row incoming">
-                <div className="msg-avatar">أ</div>
-                <div className="msg-bubble">
-                  <div className="typing-dots"><span /><span /><span /></div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         <div className="composer-wrap">
+          {!isExistingV2Chat && (
+            <div className="subject-switcher">
+              <span className="subject-switcher-label">المادة:</span>
+              {SUBJECT_SUGGESTIONS.map((s) => (
+                <button
+                  key={s.key}
+                  className={`subject-switcher-pill ${subject === s.key ? "active" : ""}`}
+                  onClick={() => setSubject(s.key)}
+                  title={s.label}
+                >
+                  {s.emoji} {s.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <AnimatePresence>
             {pendingImage && (
               <motion.div

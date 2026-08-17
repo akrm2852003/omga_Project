@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo-icon.png";
 import "./welcome.css";
 
 gsap.registerPlugin(ScrollTrigger);

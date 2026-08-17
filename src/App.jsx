@@ -44,12 +44,10 @@ function App() {
       ),
       errorElement: <NotFound />,
       children: [
-        /* شات جديد */
+        // شات جديد أو قديم — رقم الشات بيتبعت عن طريق location.state
+        // مش الـ URL، عشان الـ id متبقاش ظاهرة في السيرش بار
         { index: true, element: <ChatPage /> },
         { path: "chat", element: <ChatPage /> },
-
-        /* شات قديم */
-        { path: "chat/:id", element: <ChatPage /> },
 
         { path: "student-chats", element: <StudentChats /> },
       ],

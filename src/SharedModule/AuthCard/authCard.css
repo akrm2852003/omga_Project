@@ -13,6 +13,7 @@
 .auth-card-logo img {
   width: 56px;
   height: 56px;
+  object-fit: cover;
   border-radius: var(--radius-md);
 }
 

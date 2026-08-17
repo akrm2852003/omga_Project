@@ -26,8 +26,11 @@
   max-width: 88%;
 }
 
-.msg-row.incoming { align-self: flex-start; }
-.msg-row.outgoing { align-self: flex-end; }
+/* رسايل الـ AI على الشمال، ورسايل المستخدم على اليمين. row-reverse على
+   incoming بس عشان الأفاتار (أول عنصر في الـ DOM) يفضل في الحافة
+   الخارجية (الشمال) بدل ما يطلع في النص. */
+.msg-row.incoming { align-self: flex-end; flex-direction: row-reverse; }
+.msg-row.outgoing { align-self: flex-start; }
 
 .msg-avatar {
   width: 32px;
@@ -53,13 +56,13 @@
 .msg-row.incoming .msg-bubble {
   background: var(--bg-surface);
   border: 1px solid var(--border-soft);
-  border-top-right-radius: var(--radius-sm);
+  border-top-left-radius: var(--radius-sm);
 }
 
 .msg-row.outgoing .msg-bubble {
   background: var(--brand-gradient);
   color: #fff;
-  border-top-left-radius: var(--radius-sm);
+  border-top-right-radius: var(--radius-sm);
   font-size: 0.93rem;
   line-height: 1.6;
 }
@@ -135,6 +138,49 @@
 .subject-chip:hover {
   border-color: var(--brand-primary);
   color: var(--text-primary);
+}
+
+.subject-chip.active {
+  border-color: var(--brand-primary);
+  background: var(--brand-gradient-soft);
+  color: var(--text-primary);
+}
+
+/* ================= Subject switcher (composer) ================= */
+
+.subject-switcher {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-1);
+}
+
+.subject-switcher-label {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+.subject-switcher-pill {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-surface);
+}
+
+.subject-switcher-pill:hover {
+  border-color: var(--brand-primary);
+}
+
+.subject-switcher-pill.active {
+  border-color: var(--brand-primary);
+  background: var(--brand-gradient-soft);
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 /* ================= Composer ================= */

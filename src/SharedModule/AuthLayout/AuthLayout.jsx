@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo-icon.png";
 import "./authLayout.css";
 
 export default function AuthLayout() {

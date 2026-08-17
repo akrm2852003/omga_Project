@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiPlus, FiSearch, FiMessageSquare, FiMessageCircle } from "react-icons/fi";
 import axios from "axios";
 import { UserChatsId } from "../../Context/ChatsContext/UserChatsId";
 import { UserContext } from "../../Context/AuthContext/UserContext";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo-icon.png";
 import { groupChats } from "./groupChats";
 import "./sideBar.css";
 
@@ -13,7 +13,8 @@ const API_BASE = "https://aiservice.magacademy.co";
 
 export default function SideBar({ isOpen, closeSidebar }) {
   const navigate = useNavigate();
-  const { id: activeId } = useParams();
+  const location = useLocation();
+  const activeId = location.state?.chatId || null;
   const { userChatsId } = useContext(UserChatsId);
   const { userId } = useContext(UserContext);
 
@@ -55,7 +56,8 @@ export default function SideBar({ isOpen, closeSidebar }) {
   const grouped = groupChats(filteredChats);
 
   function goToChat(chatId) {
-    navigate(`/home/chat/${chatId}`);
+    // رقم الشات بيتبعت في location.state مش في المسار، عشان يفضل مخفي من السيرش بار
+    navigate("/home/chat", { state: { chatId } });
     closeSidebar?.();
   }
 

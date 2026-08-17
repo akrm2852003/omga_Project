@@ -25,6 +25,7 @@
 .landing-nav-brand img {
   width: 36px;
   height: 36px;
+  object-fit: cover;
   border-radius: var(--radius-sm);
 }
 
@@ -96,9 +97,10 @@
   margin-bottom: var(--space-3);
   opacity: 0;
   transform: translateY(12px);
+  justify-content: flex-end; /* رسايل الـ AI على الشمال، زي الشات الحقيقي */
 }
 
-.hero-mockup-row.user { justify-content: flex-end; }
+.hero-mockup-row.user { justify-content: flex-start; /* رسايل المستخدم على اليمين */ }
 
 .hero-mockup-avatar {
   width: 28px;
