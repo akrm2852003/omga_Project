@@ -1,6 +1,5 @@
-import React, { createContext, useState } from "react";
-
-export const UserContext = createContext();
+import React, { useState } from "react";
+import { UserContext } from "./UserContext";
 
 export default function AuthContextProvider({ children }) {
   const [userId, setUserId] = useState(localStorage.getItem("userId") || null);

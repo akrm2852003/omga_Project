@@ -1,6 +1,5 @@
-import React, { createContext, useState, useEffect } from "react";
-
-export const UserChatsId = createContext();
+import React, { useState, useEffect } from "react";
+import { UserChatsId } from "./UserChatsId";
 
 export default function ChatsContext({ children }) {
   // قراءة الشاتس من localStorage مباشرة

@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { FiMail, FiAlertCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
-import { UserContext } from "../../../Context/AuthContext/AuthContext";
-import { UserChatsId } from "../../../Context/ChatsContext/ChatsContext";
+import { UserContext } from "../../../Context/AuthContext/UserContext";
+import { UserChatsId } from "../../../Context/ChatsContext/UserChatsId";
 import AuthCard from "../../../SharedModule/AuthCard/AuthCard";
 
 export default function Login() {

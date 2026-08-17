@@ -1,6 +1,9 @@
 .master-layout {
   display: flex;
-  flex-direction: row-reverse; /* السايد بار على اليمين في RTL */
+  /* في RTL، flex-direction: row الافتراضي بيحط أول عنصر (SideBar) على
+     اليمين لوحده (start = يمين في RTL) — مكنش محتاج row-reverse أصلاً،
+     وده اللي كان بيخلي السايد بار يروح الشمال بينما زرار الفتح (في
+     NavBar جوه master-main) فاضل على اليمين بشكل منفصل. */
   height: 100vh;
   overflow: hidden;
   background: var(--bg-canvas);

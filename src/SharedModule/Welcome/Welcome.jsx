@@ -152,7 +152,7 @@ export default function Welcome() {
         <div className="hero-mockup">
           {MOCKUP_MESSAGES.map((m, i) => (
             <div key={i} className={`hero-mockup-row ${m.role === "user" ? "user" : ""}`}>
-              <div className="hero-mockup-avatar" />
+              {m.role !== "user" && <div className="hero-mockup-avatar" />}
               <div className="hero-mockup-bubble">{m.text}</div>
             </div>
           ))}

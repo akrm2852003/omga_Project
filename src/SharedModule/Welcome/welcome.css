@@ -98,7 +98,7 @@
   transform: translateY(12px);
 }
 
-.hero-mockup-row.user { flex-direction: row-reverse; }
+.hero-mockup-row.user { justify-content: flex-end; }
 
 .hero-mockup-avatar {
   width: 28px;

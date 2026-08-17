@@ -3,30 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiPlus, FiSearch, FiMessageSquare, FiMessageCircle } from "react-icons/fi";
 import axios from "axios";
-import { UserChatsId } from "../../Context/ChatsContext/ChatsContext";
-import { UserContext } from "../../Context/AuthContext/AuthContext";
+import { UserChatsId } from "../../Context/ChatsContext/UserChatsId";
+import { UserContext } from "../../Context/AuthContext/UserContext";
 import logo from "../../assets/logo.png";
+import { groupChats } from "./groupChats";
 import "./sideBar.css";
 
 const API_BASE = "https://aiservice.magacademy.co";
-
-function groupChats(chats) {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfYesterday = new Date(startOfToday);
-  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-
-  const groups = { "النهاردة": [], "إمبارح": [], "الأقدم": [] };
-
-  chats.forEach((chat) => {
-    const t = new Date(chat.updated_at);
-    if (t >= startOfToday) groups["النهاردة"].push(chat);
-    else if (t >= startOfYesterday) groups["إمبارح"].push(chat);
-    else groups["الأقدم"].push(chat);
-  });
-
-  return Object.entries(groups).filter(([, items]) => items.length > 0);
-}
 
 export default function SideBar({ isOpen, closeSidebar }) {
   const navigate = useNavigate();

@@ -3,22 +3,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiSearch, FiMessageCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../../Context/AuthContext/AuthContext";
+import { UserContext } from "../../../Context/AuthContext/UserContext";
+import { relativeTime } from "./relativeTime";
 import "./studentChats.css";
 
 const API_BASE = "https://aiservice.magacademy.co";
-
-function relativeTime(iso) {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "دلوقتي";
-  if (mins < 60) return `من ${mins} دقيقة`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `من ${hours} ساعة`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `من ${days} يوم`;
-  return new Date(iso).toLocaleDateString("ar-EG");
-}
 
 export default function StudentChats() {
   const { userId } = useContext(UserContext);
