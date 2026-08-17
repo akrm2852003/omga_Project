@@ -128,15 +128,22 @@ export default function ChatPage() {
 
       if (activeChatFetchRef.current !== chatId) return; // فيه شات أحدث اتطلب في الوقت ده، تجاهل الرد ده
 
-      const formattedMessages = response.data.chat.map((msg) => ({
-        message:          msg.text,
-        formattedMessage: msg.role !== "user" ? formatMessage(msg.text) : null,
-        sender:           msg.role === "user" ? "You" : "AI",
-        direction:        msg.role === "user" ? "outgoing" : "incoming",
-        sentTime:         "just now",
-        isImage:          !!msg.image,
-        imageUrl:         msg.image || null,
-      }));
+      const formattedMessages = response.data.chat.map((msg) => {
+        // 🐛 فيكس: صورة الطالب المرفوعة كانت بتتفقد لما تفتح شات قديم تاني —
+        // formattedMessage كان بيتحط null لأي رسالة user، لكن الـ render
+        // بيستخدم نفس الحقل ده كـ src للصورة. كمان msg.images (مصفوفة، من
+        // نظام Subject Stream) دلوقتي بتتقرا زي msg.image (نص، من نظام v2).
+        const imageUrl = msg.image || msg.images?.[0] || null;
+        return {
+          message:          msg.text,
+          formattedMessage: msg.role !== "user" ? formatMessage(msg.text) : imageUrl,
+          sender:           msg.role === "user" ? "You" : "AI",
+          direction:        msg.role === "user" ? "outgoing" : "incoming",
+          sentTime:         "just now",
+          isImage:          msg.role === "user" && !!imageUrl,
+          imageUrl,
+        };
+      });
       setMessages(formattedMessages);
       setCurrentChatId(chatId);
       currentChatIdRef.current = chatId;
