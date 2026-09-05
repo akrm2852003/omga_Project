@@ -10,13 +10,16 @@ beforeEach(() => {
 });
 
 describe("ThemeContextProvider", () => {
-  it("defaults to dark theme when nothing is saved", () => {
+  // 🆕 طلب مستخدم صريح: "خليه زي الفرونت اند بتاعنا" - omga-grader-react افتراضيًا
+  // ثيم فاتح بس (مفيش وضع غامق خالص هناك)، فالافتراضي هنا اتغيّر لفاتح بدل الغامق
+  // القديم (راجع ThemeContext.jsx's getInitialTheme) - الغامق فضل موجود كاختيار يدوي بس.
+  it("defaults to light theme when nothing is saved", () => {
     render(
       <ThemeContextProvider>
         <ThemeToggle />
       </ThemeContextProvider>,
     );
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 
   it("restores a previously saved theme from localStorage", () => {
@@ -40,11 +43,11 @@ describe("ThemeContextProvider", () => {
     const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-    expect(localStorage.getItem("theme")).toBe("light");
-
-    await user.click(button);
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(localStorage.getItem("theme")).toBe("dark");
+
+    await user.click(button);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(localStorage.getItem("theme")).toBe("light");
   });
 });

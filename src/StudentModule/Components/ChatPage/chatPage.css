@@ -233,7 +233,7 @@
 
 .composer-bar:focus-within {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--brand-primary-rgb), 0.15);
 }
 
 .composer-icon-btn {
@@ -330,7 +330,7 @@
 .btn-capture,
 .btn-close-camera {
   padding: 0.7rem 1.4rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.9rem;
 }

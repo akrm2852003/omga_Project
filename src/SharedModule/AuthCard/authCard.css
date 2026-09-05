@@ -57,7 +57,7 @@
 
 .field-input-wrap:focus-within {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--brand-primary-rgb), 0.15);
 }
 
 .field-input-wrap svg {
@@ -92,15 +92,15 @@
 }
 
 .form-alert.error {
-  background: rgba(244, 63, 94, 0.12);
+  background: rgba(var(--danger-rgb), 0.1);
   color: var(--danger);
-  border: 1px solid rgba(244, 63, 94, 0.3);
+  border: 1px solid rgba(var(--danger-rgb), 0.28);
 }
 
 .form-alert.success {
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba(var(--success-rgb), 0.1);
   color: var(--success);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  border: 1px solid rgba(var(--success-rgb), 0.28);
 }
 
 .btn-submit {

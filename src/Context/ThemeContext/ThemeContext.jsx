@@ -4,7 +4,10 @@ import { ThemeCtx } from "./ThemeCtx";
 function getInitialTheme() {
   const saved = localStorage.getItem("theme");
   if (saved === "light" || saved === "dark") return saved;
-  return "dark"; // نفس الديزاين الأساسي للمنتج
+  // 🆕 طلب مستخدم صريح: خلي شكل الابليكيشن زي omga-grader-react - ده افتراضيًا
+  // ثيم فاتح بس (مفيش وضع غامق خالص هناك) - فبقى هو الافتراضي هنا كمان، والغامق
+  // فضل موجود كاختيار يدوي بس (زرار ThemeToggle) مش الحالة الافتراضية.
+  return "light";
 }
 
 export default function ThemeContextProvider({ children }) {

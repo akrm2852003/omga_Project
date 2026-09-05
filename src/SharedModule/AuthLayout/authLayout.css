@@ -4,6 +4,10 @@
   background: var(--bg-canvas);
 }
 
+/* 🆕 طلب مستخدم صريح: "خليه زي الفرونت اند بتاعنا" - الخلفية المتوهجة القديمة
+   (radial gradients بنفسجي/وردي + بلوبين عايمين بحركة) اتشالت خالص، بدّلناها بخلفية
+   هادية (var(--bg-surface-2)) + حد بسيط، نفس فلسفة omga-grader-react's .auth-card
+   تمامًا (بلا أي زخرفة متحركة/متوهجة). */
 .auth-visual {
   flex: 1;
   position: relative;
@@ -12,42 +16,8 @@
   flex-direction: column;
   justify-content: space-between;
   padding: var(--space-12) var(--space-12);
-  background: radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.35), transparent 55%),
-              radial-gradient(circle at 80% 75%, rgba(255, 110, 199, 0.28), transparent 50%),
-              var(--bg-surface);
-}
-
-.auth-visual::before,
-.auth-visual::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.55;
-  pointer-events: none; /* زخرفة بس — متمنعش كليك على أي حاجة تحتها */
-}
-
-.auth-visual::before {
-  width: 320px;
-  height: 320px;
-  background: var(--brand-primary);
-  top: -80px;
-  right: -80px;
-  animation: auth-blob-float 9s ease-in-out infinite;
-}
-
-.auth-visual::after {
-  width: 260px;
-  height: 260px;
-  background: var(--brand-pink);
-  bottom: -60px;
-  left: -60px;
-  animation: auth-blob-float 11s ease-in-out infinite reverse;
-}
-
-@keyframes auth-blob-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(20px, -20px) scale(1.08); }
+  background: var(--bg-surface-2);
+  border-inline-end: 1px solid var(--border-soft);
 }
 
 .auth-visual-brand {

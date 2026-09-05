@@ -35,6 +35,18 @@
   gap: var(--space-3);
 }
 
+/* 🆕 طلب مستخدم صريح: "يبقى ريسبونس لكل الشاشات" - على شاشة موبايل ضيقة (٣٩٠px
+   وأقل)، الأربع عناصر (زرارين + toggle + العلامة) كانوا بيتزنقوا في صف واحد ونص
+   "OmGa AI" بيتلف على سطرين. الحل: نص العلامة يختفي (اللوجو بس كافي كتعريف بصري
+   في المساحة الضيقة دي)، والزراير تاخد بادينج أصغر - نفس فلسفة omga-grader-react's
+   .topbar-username اللي بيختفي في نفس الحالة بالظبط (راجع naveBar.css). */
+@media (max-width: 480px) {
+  .landing-nav { padding: var(--space-3) var(--space-4); gap: var(--space-2); }
+  .landing-nav-brand span { display: none; }
+  .landing-nav-links { gap: var(--space-2); }
+  .landing-nav-links .btn { padding: 0.6rem 1rem; font-size: 0.85rem; }
+}
+
 /* ================= Hero ================= */
 
 .hero {
@@ -50,27 +62,11 @@
   isolation: isolate; /* الخلفيات بره ما تتعارضش مع محتوى السكاشن اللي بعدها */
 }
 
-/* ── خلفية شبكة خفيفة + spotlight بنفسجي خلف العنوان — لمسة عمق تجارية ──
-   🐛 فيكس: inset السالب كان بيخلي الطبقة الزخرفية دي تمتد فوق الـ nav وتقف
-   قدام زراير "دخول"/"ابدأ مجاناً" وتمنع الكليك عليهم، حتى مع z-index:-1
-   (z-index بس بيرتب جوه stacking context بتاع .hero نفسه، مش قدام
-   .landing-nav اللي جاي قبله في الـ DOM). pointer-events:none بيمنع أي
-   طبقة زخرفية زي دي إنها تعترض كليكات تاني حتى لو تداخلت بصرياً. */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: -10% -10% -20%;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(60% 45% at 50% 18%, rgba(124, 92, 255, 0.28), transparent 70%),
-    radial-gradient(40% 30% at 85% 60%, rgba(255, 110, 199, 0.14), transparent 70%),
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: auto, auto, 42px 42px, 42px 42px;
-  mask-image: radial-gradient(70% 60% at 50% 30%, #000 40%, transparent 90%);
-  -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000 40%, transparent 90%);
-}
+/* 🆕 طلب مستخدم صريح: "خليه زي الفرونت اند بتاعنا" - omga-grader-react's فلسفة
+   بصرية هادية تمامًا (ورقة كريمي بلا أي زخرفة متوهجة/شبكة خلفية) - الـspotlight
+   البنفسجي + الشبكة المتوهجة القديمة اتشالوا خالص بدل ما نلوّنهم بس، عشان الإحساس
+   العام يبقى "هادي/محرري" مش "SaaS لامع". */
+.hero::before { content: none; }
 
 .hero-eyebrow {
   display: inline-flex;
@@ -110,24 +106,14 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow: var(--shadow-lg);
   padding: var(--space-5);
   text-align: right;
 }
 
-/* حدّ متدرّج خفيف حوالين الكارت عشان يبقى شكله أغلى */
-.hero-mockup::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(124, 92, 255, 0.6), transparent 40%, rgba(255, 110, 199, 0.4));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
+/* 🆕 كان حد متدرّج قوسي قزحي - بدّلناه بحد عادي هادي (نفس فلسفة omga-grader-react's
+   .card: حد بسيط بلون واحد، بدون أي تدرّج) */
+.hero-mockup::before { content: none; }
 
 .hero-mockup-row {
   display: flex;

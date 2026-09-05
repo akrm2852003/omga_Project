@@ -47,7 +47,7 @@
 /* ================= Scientific Card 🔹 ================= */
 
 .chat-scientific {
-  background: rgba(124, 92, 255, 0.1);
+  background: rgba(var(--brand-primary-rgb), 0.1);
   border-right: 3px solid var(--brand-primary);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -58,7 +58,7 @@
 /* ================= Funny 🎭 ================= */
 
 .chat-funny {
-  background: rgba(255, 176, 32, 0.1);
+  background: rgba(var(--brand-accent-rgb), 0.1);
   border-right: 3px solid var(--brand-accent);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -69,7 +69,7 @@
 /* ================= Tip Card 💡 ================= */
 
 .chat-tip-paragraph {
-  background: rgba(255, 110, 199, 0.08);
+  background: rgba(var(--brand-primary-rgb), 0.08);
   border-right: 3px solid var(--brand-pink);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -92,7 +92,7 @@
 /* ================= Math Card ================= */
 
 .chat-math-card {
-  background: rgba(255, 176, 32, 0.08);
+  background: rgba(var(--brand-accent-rgb), 0.08);
   border-right: 3px solid var(--brand-accent);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -105,7 +105,7 @@
 /* ================= Inline Math ================= */
 
 .chat-inline-math {
-  background: rgba(255, 176, 32, 0.15);
+  background: rgba(var(--brand-accent-rgb), 0.15);
   color: var(--content-amber-text);
   padding: 1px 5px;
   border-radius: 4px;
@@ -117,7 +117,7 @@
 /* ================= Highlights ================= */
 
 .chat-inline-highlight {
-  background: rgba(124, 92, 255, 0.15);
+  background: rgba(var(--brand-primary-rgb), 0.15);
   color: var(--brand-primary-2);
   padding: 0 4px;
   border-radius: 3px;
@@ -126,7 +126,7 @@
 }
 
 .chat-inline-highlight-important {
-  background: rgba(155, 123, 255, 0.2);
+  background: rgba(var(--brand-primary-rgb), 0.2);
   color: var(--content-purple-text);
   padding: 0 4px;
   border-radius: 3px;
@@ -249,7 +249,7 @@
 /* ================= Answer Highlight ================= */
 
 .chat-answer-highlight {
-  background: rgba(255, 176, 32, 0.16);
+  background: rgba(var(--brand-accent-rgb), 0.16);
   border-right: 3px solid var(--brand-accent);
   color: var(--content-amber-text) !important;
   padding: 8px 14px 8px 10px;

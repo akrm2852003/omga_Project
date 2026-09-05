@@ -6,29 +6,10 @@
   padding: var(--space-16) var(--space-6) var(--space-6);
 }
 
-/* خط متدرّج رفيع فوق الفوتر — "درزة" بصرية بتفصله عن باقي الصفحة بأناقة */
-.site-footer::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--brand-gradient);
-  opacity: 0.7;
-}
-
-/* توهج خفيف تحت العلامة التجارية */
-.site-footer-glow {
-  position: absolute;
-  top: -120px;
-  right: -80px;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.16), transparent 70%);
-  pointer-events: none;
-}
+/* 🆕 طلب مستخدم صريح: "خليه زي الفرونت اند بتاعنا" - الخط المتدرّج الزخرفي فوق
+   الفوتر + التوهج البنفسجي تحت العلامة التجارية اتشالوا (.site-footer أصلاً عندها
+   border-top هادي كفاية - نفس فلسفة omga-grader-react's .sidebar-foot البسيطة). */
+.site-footer-glow { display: none; }
 
 .site-footer-inner {
   position: relative;

@@ -1,44 +1,65 @@
 /* ============================================================
    OmGa AI — Design System (tokens + base reset)
+   🆕 طلب مستخدم صريح: "خليه زي الفرونت اند اللي احنا عاملينه" - التوكنز هنا اتبنت
+   لتطابق نظام التصميم في omga-grader-react (راجع omga-grader-react/src/styles/theme.css) -
+   نفس القيم بالظبط في ثيم النهار (الافتراضي هناك)، ونفس المنطق (خلفية ورقية دافية،
+   accent واحد مسطّح بلا تدرّج، ألوان دلالية هادئة mint/amber/danger، ظلال ناعمة جداً
+   بلا أي glow). أسماء المتغيرات القديمة (--bg-canvas, --brand-primary...) اتسابت زي
+   ما هي عمداً - 14 ملف CSS بيستخدموها، وإعادة تسميتها كانت هتحتاج تعديل كل ملف من غير
+   أي فايدة بصرية إضافية. اللي اتغيّر هو *القيم* + شيل مفهوم التدرّج/التوهج بالكامل
+   (--brand-gradient بقت لون مصمت، --shadow-glow بقت ظل عادي) - راجع تعليقات كل قسم تحت.
    ============================================================ */
 
 :root {
-  /* ── الخلفيات ───────────────────────────────────────────── */
-  --bg-canvas:    #0A0B12;
-  --bg-surface:   #12141F;
-  --bg-surface-2: #1A1D2B;
-  --bg-surface-3: #232739;
+  /* ── الخلفيات - نفس ورقة omga-grader-react's --bg/--surface/--surface-2/--surface-3
+     بالظبط (كريمي دافي هادي، مش أبيض بارد ولا غامق) ─────────────────────── */
+  --bg-canvas:    #FAFAF8;
+  --bg-surface:   #FFFFFF;
+  --bg-surface-2: #F3F2EF;
+  --bg-surface-3: #EBEAE6;
 
-  /* ── العلامة التجارية ──────────────────────────────────── */
-  --brand-primary:   #7C5CFF;
-  --brand-primary-2: #9B7BFF;
-  --brand-accent:    #FFB020;
-  --brand-pink:      #FF6EC7;
-  --brand-gradient: linear-gradient(135deg, #7C5CFF 0%, #B026FF 50%, #FF6EC7 100%);
-  --brand-gradient-soft: linear-gradient(135deg, rgba(124,92,255,0.16) 0%, rgba(255,110,199,0.12) 100%);
+  /* ── العلامة التجارية - accent واحد مسطّح (--accent هناك)، بلا تدرّج/توهج خالص.
+     🆕 --brand-gradient/--brand-gradient-soft اتحولوا للون مصمت/تينت خفيف بدل تدرّج
+     قوسي قزحي - أي عنصر كان بيستخدمهم (أفاتار، زرار "محادثة جديدة"، فقاعة رسالة
+     الطالب...) هيطلع تلقائيًا بلون accent مصمت واحد بدل التدرّج القديم. */
+  --brand-primary:   #4F46E5;
+  --brand-primary-2: #4038C4;
+  --brand-accent:    #9A5B0A;
+  --brand-pink:      #4F46E5;
+  --brand-gradient: var(--brand-primary);
+  --brand-gradient-soft: #EEEDFC;
+  /* 🆕 نسخة RGB (بدون داله rgb()) من --brand-primary - لازمة لأي box-shadow/rgba() حلقة
+     تركيز محتاجة شفافية جزئية (مينفعش تحط var() جوه rgba() مباشرة إلا كده) */
+  --brand-primary-rgb: 79, 70, 229;
+  --brand-accent-rgb: 154, 91, 10;
+  --danger-rgb: 178, 58, 46;
+  --success-rgb: 21, 121, 79;
 
-  /* ── حالات دلالية ──────────────────────────────────────── */
-  --success: #22C55E;
-  --danger:  #F43F5E;
-  --warning: #FFB020;
-  --info:    #3AA9FF;
+  /* ── حالات دلالية - نفس mint/amber/danger بالظبط من omga-grader-react ──────── */
+  --success: #15794F;
+  --danger:  #B23A2E;
+  --warning: #9A5B0A;
+  --info:    #4F46E5;
 
-  /* ── النصوص ────────────────────────────────────────────── */
-  --text-primary:   #F5F6FB;
-  --text-secondary: #9AA3BC;
-  --text-tertiary:  #626A85;
+  /* ── النصوص - نفس --ink/--muted/--muted-2 بالظبط ──────────────────────────── */
+  --text-primary:   #1A1A18;
+  --text-secondary: #83807A;
+  --text-tertiary:  #ACA9A1;
   --text-on-brand:  #FFFFFF;
 
-  /* ── حدود وظلال ────────────────────────────────────────── */
-  --border-soft:   rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.25);
-  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lg:   0 20px 50px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 40px rgba(124, 92, 255, 0.25);
-  --shadow-glow-accent: 0 0 30px rgba(255, 176, 32, 0.25);
+  /* ── حدود وظلال - نفس --border/--border-strong + ظلال ناعمة جداً بلا أي glow.
+     🆕 --shadow-glow/--shadow-glow-accent بقوا يساووا --shadow-md - أي hover/كارت كان
+     بيستخدمهم (توهج بنفسجي حوالين الكارت) هيطلع دلوقتي ظل عادي هادي بس، متسق مع
+     فلسفة omga-grader-react (مفيش أي عنصر "متوهج" هناك خالص). */
+  --border-soft:   #E6E4DF;
+  --border-strong: #D6D3CC;
+  --shadow-sm:   0 1px 2px rgba(20, 18, 14, .05);
+  --shadow-md:   0 6px 20px rgba(20, 18, 14, .08);
+  --shadow-lg:   0 12px 32px rgba(20, 18, 14, .12);
+  --shadow-glow: var(--shadow-md);
+  --shadow-glow-accent: var(--shadow-md);
 
-  /* ── قياسات ────────────────────────────────────────────── */
+  /* ── قياسات (زي ما هي - سلم مسافات/أنصاف أقطار omga_Project كان أصلاً منظم كويس) ── */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -49,64 +70,88 @@
   --space-16: 64px;
   --space-24: 96px;
 
+  /* 🆕 مقاسات أهدأ شوية من الأصلية (كانت 8/14/22/32) - عشان تقرب من سلم
+     omga-grader-react's --radius(10px)/--radius-lg(14px) بدل الشكل "بلوبي" المدوّر جداً */
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --radius-xl: 32px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-full: 999px;
 
   --font-family: "IBM Plex Sans Arabic", "Segoe UI", system-ui, sans-serif;
+  /* 🆕 نفس فونت الأرقام/الأكواد المستخدم في omga-grader-react - مفيد لأي id/رقم/وقت */
+  --font-mono: "JetBrains Mono", monospace;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  /* ── ألوان نصوص كروت المحتوى (chatFormatter) — لازم تتقلب مع الثيم
-     عشان الباستيل الفاتح (مصمم لخلفية غامقة) يفضل مقروء على خلفية بيضا ── */
-  --content-purple-text: #c9bbff;
-  --content-amber-text:  #ffd98a;
-  --content-pink-text:   #ffc9ea;
-  --content-cyan-text:   #7dd3fc;
-  --content-code-text:   #e2e8f0;
-  --content-inline-code-text: #bfdbfe;
+  /* ── ألوان نصوص كروت المحتوى (chatFormatter) - اتبدلت لتطابق الألوان الدلالية
+     الجديدة (mint/amber/danger/accent) بدل الباستيل القديم المصمم للخلفية الغامقة ── */
+  --content-purple-text: #4F46E5;
+  --content-amber-text:  #9A5B0A;
+  --content-pink-text:   #B23A2E;
+  --content-cyan-text:   #15794F;
+  --content-code-text:   #1A1A18;
+  --content-inline-code-text: #4F46E5;
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   الثيم الغامق - بيتفعّل بـ data-theme="dark" على <html> (بقى اختياري دلوقتي،
+   الافتراضي بقى الثيم الفاتح زي omga-grader-react - راجع ThemeContext.jsx).
+   مصمم بنفس منطق ألوان الفاتح فوق (نفس accent/mint/amber/danger) على خلفية غامقة
+   دافية (مش أسود بارد) - عشان اللي يفضّل الوضع الغامق يحصل عليه من غير ما نفقد
+   التناسق مع النظام الجديد.
+   ============================================================ */
+:root[data-theme="dark"] {
+  --bg-canvas:    #17181A;
+  --bg-surface:   #1F2023;
+  --bg-surface-2: #26282B;
+  --bg-surface-3: #303236;
+
+  --brand-primary:   #7C74F0;
+  --brand-primary-2: #9089F5;
+  --brand-gradient: var(--brand-primary);
+  --brand-gradient-soft: rgba(124, 116, 240, 0.14);
+  --brand-primary-rgb: 124, 116, 240;
+  --brand-accent-rgb: 232, 169, 61;
+
+  --success: #3DDC97;
+  --danger:  #F0776A;
+  --warning: #E8A93D;
+  --info:    #7C74F0;
+  --danger-rgb: 240, 119, 106;
+  --success-rgb: 61, 220, 151;
+
+  --text-primary:   #F2F1ED;
+  --text-secondary: #ABA89F;
+  --text-tertiary:  #7A776F;
+  --text-on-brand:  #FFFFFF;
+
+  --border-soft:   rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.38);
+  --shadow-lg:   0 16px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow: var(--shadow-md);
+  --shadow-glow-accent: var(--shadow-md);
+
+  --content-purple-text: #B3ACFF;
+  --content-amber-text:  #F0C36B;
+  --content-pink-text:   #F5A69C;
+  --content-cyan-text:   #6BDDB0;
+  --content-code-text:   #E7E5DF;
+  --content-inline-code-text: #B3ACFF;
 
   color-scheme: dark;
 }
 
-/* ============================================================
-   الثيم الفاتح — بيتفعّل بـ data-theme="light" على <html>
-   (متحكم فيه من ThemeContext، ومحفوظ في localStorage).
-   العلامة التجارية (brand-*) ثابتة في الاتنين، بس الخلفيات/النصوص/الظلال
-   بتتقلب عشان تفضل واضحة على خلفية فاتحة.
-   ============================================================ */
+/* 🆕 بقيت متروسة فاضية عمداً - الفاتح بقى الافتراضي على :root نفسه فوق (زي
+   omga-grader-react)، فمفيش داعي أي override هنا. سايبها موجودة (مش شايلها) عشان
+   أي مكان قديم في الكود لسه بيحط data-theme="light" صراحة (مش بس يشيل data-theme)
+   يفضل شغال صح من غير أي تغيير سلوك. */
 :root[data-theme="light"] {
-  --bg-canvas:    #F6F7FB;
-  --bg-surface:   #FFFFFF;
-  --bg-surface-2: #F1F2F8;
-  --bg-surface-3: #E6E8F2;
-
-  --brand-gradient-soft: linear-gradient(135deg, rgba(124,92,255,0.12) 0%, rgba(255,110,199,0.08) 100%);
-
-  --text-primary:   #171A29;
-  --text-secondary: #565D74;
-  --text-tertiary:  #8890A6;
-  --text-on-brand:  #FFFFFF;
-
-  --border-soft:   rgba(15, 17, 31, 0.08);
-  --border-strong: rgba(15, 17, 31, 0.14);
-  --shadow-sm:   0 2px 8px rgba(15, 17, 31, 0.06);
-  --shadow-md:   0 8px 24px rgba(15, 17, 31, 0.08);
-  --shadow-lg:   0 20px 50px rgba(15, 17, 31, 0.12);
-  --shadow-glow: 0 0 30px rgba(124, 92, 255, 0.18);
-  --shadow-glow-accent: 0 0 24px rgba(255, 176, 32, 0.18);
-
-  --content-purple-text: #6D28D9;
-  --content-amber-text:  #92400E;
-  --content-pink-text:   #9D174D;
-  --content-cyan-text:   #0369A1;
-  --content-code-text:   #1E293B;
-  --content-inline-code-text: #1D4ED8;
-
-  color-scheme: light;
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
@@ -137,6 +182,8 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
+
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 img,
 video {
@@ -204,40 +251,46 @@ p  { color: var(--text-secondary); }
 }
 
 /* ── عناصر مشتركة عبر الصفحات ──────────────────────────────── */
+/* 🆕 كانت border-radius: var(--radius-full) (كبسولة كاملة) - omga-grader-react's .btn
+   حواف صغيرة (8px) مش كبسولة، فبقت --radius-sm هنا تطابقها. عناصر الاختيار
+   (chips/pills زي .subject-chip) سايبينها كبسولة زي ما هي - نفس تمييز omga-grader-react
+   نفسه بين .btn (زوايا صغيرة) و.form-pill (كبسولة كاملة، للتابات/الاختيارات بس). */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   padding: 0.8rem 1.6rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.95rem;
   white-space: nowrap;
-  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
+  transition: background 0.15s var(--ease-out), border-color 0.15s var(--ease-out), opacity 0.15s var(--ease-out);
 }
 
+/* 🆕 كان فيه transform:translateY(-2px) + توهج بنفسجي أقوى وقت hover (حركة "رفع" مبالغ
+   فيها) - omga-grader-react's .btn-primary:hover بيغيّر لون الخلفية بس (accent-hover)
+   من غير أي حركة/رفع - أهدأ وأقرب لفلسفة "moments not instruments" بتاعتها */
 .btn-primary {
-  background: var(--brand-gradient);
+  background: var(--brand-primary);
   color: var(--text-on-brand);
-  box-shadow: var(--shadow-glow);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(124, 92, 255, 0.4); }
-.btn-primary:active { transform: translateY(0) scale(0.98); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-primary:hover { background: var(--brand-primary-2); }
+.btn-primary:active { opacity: .85; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-ghost {
-  background: var(--bg-surface-2);
+  background: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--border-strong);
 }
-.btn-ghost:hover { border-color: var(--border-strong); background: var(--bg-surface-3); }
+.btn-ghost:hover { background: var(--bg-surface-2); }
 
 .surface-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .container-page {
